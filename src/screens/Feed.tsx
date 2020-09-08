@@ -19,14 +19,15 @@ import { Text, TextInput } from 'exoflex';
 import Constants from 'expo-constants';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
-import { getAllFeeds } from '../apis/feed';
+import { getAllPosts } from '../apis/post';
+import { DEV_API } from '../constants/api';
 
 const COMMENT_INPUT_POSITION = 568.5;
 
 export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
-  let { isLoading, error, data } = useQuery('feeds', getAllFeeds);
+  let { data: posts } = useQuery('posts', getAllPosts);
   let [isTypingComment, setTypingComment] = useState(false);
   let [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -68,21 +69,24 @@ export default function Feed() {
       <FlatList
         ref={flatList}
         keyExtractor={(_item, index) => index.toString()}
-        data={data?.results || []}
+        data={posts || []}
         onScrollEndDrag={updateCurrentOffset}
         onMomentumScrollEnd={updateCurrentOffset}
-        renderItem={({ item }) => {
+        renderItem={({ item: post }) => {
+          let { user, images, description } = post;
           return (
             <View style={{ marginBottom: 24 }}>
               <View style={styles.itemHeader}>
                 <Image
-                  source={{ uri: item.picture.thumbnail }}
+                  source={{
+                    uri: `${DEV_API}${user.photo.formats.thumbnail.url}`,
+                  }}
                   style={styles.itemProfileImage}
                 />
-                <Text>{item.name.first}</Text>
+                <Text>{user.username}</Text>
               </View>
               <Image
-                source={{ uri: item.picture.large }}
+                source={{ uri: `${DEV_API}${images[0].formats.large.url}` }}
                 style={styles.itemImage}
               />
               <TouchableOpacity
