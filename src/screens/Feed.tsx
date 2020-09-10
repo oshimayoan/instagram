@@ -84,7 +84,9 @@ export default function Feed() {
                   }}
                   style={styles.itemProfileImage}
                 />
-                <Text weight="medium">{user.username}</Text>
+                <Text weight="medium" style={{ color: '#000' }}>
+                  {user.username}
+                </Text>
               </View>
               <Image
                 source={{ uri: `${DEV_API}${images[0].formats.large.url}` }}
@@ -92,7 +94,9 @@ export default function Feed() {
               />
               <View style={{ marginHorizontal: 12, marginTop: 12 }}>
                 <Text>
-                  <Text weight="medium">{user.username}</Text>
+                  <Text weight="medium" style={{ color: '#000' }}>
+                    {user.username}
+                  </Text>
                   {` ${description}`}
                 </Text>
               </View>
@@ -100,7 +104,9 @@ export default function Feed() {
                 onPress={() => {}}
                 style={{ marginHorizontal: 12, marginTop: 12 }}
               >
-                <Text style={{ color: '#555' }}>View all 3 comments</Text>
+                <Text weight="light" style={{ color: '#555' }}>
+                  View all 3 comments
+                </Text>
               </TouchableOpacity>
               <View
                 style={{
@@ -109,7 +115,10 @@ export default function Feed() {
                 }}
               >
                 <Text>
-                  <Text weight="medium">oliviachg</Text> Hey, awesome bike!
+                  <Text weight="medium" style={{ color: '#000' }}>
+                    oliviachg
+                  </Text>{' '}
+                  Hey, awesome bike!
                 </Text>
               </View>
               <TouchableOpacity
@@ -126,9 +135,14 @@ export default function Feed() {
                   }}
                   style={styles.itemProfileImage}
                 />
-                <Text style={{ color: '#555' }}>Add a comment...</Text>
+                <Text weight="light" style={{ color: '#555' }}>
+                  Add a comment...
+                </Text>
               </TouchableOpacity>
-              <Label style={{ marginHorizontal: 12, color: '#555' }}>
+              <Label
+                weight="light"
+                style={{ marginHorizontal: 12, color: '#555' }}
+              >
                 {format(createdAt)}
               </Label>
             </View>
