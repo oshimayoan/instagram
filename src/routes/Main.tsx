@@ -1,9 +1,27 @@
 import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { IconButton } from 'exoflex';
 
-import { Feed, Profile } from '../screens';
+import { Comments, Feed, Profile } from '../screens';
+
+const FeedStack = createStackNavigator();
+
+function FeedStackScreen() {
+  return (
+    <FeedStack.Navigator
+      screenOptions={{
+        headerTitleAlign: 'left',
+        headerBackTitleVisible: false,
+        headerBackImage: () => <IconButton icon="arrow-left" />,
+      }}
+    >
+      <FeedStack.Screen name="Feed" component={Feed} />
+      <FeedStack.Screen name="Comments" component={Comments} />
+    </FeedStack.Navigator>
+  );
+}
 
 const Tab = createBottomTabNavigator();
 
@@ -27,7 +45,7 @@ export default () => {
         })}
         tabBarOptions={{ showLabel: false }}
       >
-        <Tab.Screen name="Feed" component={Feed} />
+        <Tab.Screen name="Feed" component={FeedStackScreen} />
         <Tab.Screen name="Profile" component={Profile} />
       </Tab.Navigator>
     </NavigationContainer>

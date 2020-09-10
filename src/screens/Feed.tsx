@@ -18,6 +18,7 @@ import { useQuery } from 'react-query';
 import { Text, TextInput, Label } from 'exoflex';
 import Constants from 'expo-constants';
 import { format } from 'timeago.js';
+import { useNavigation } from '@react-navigation/native';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { getAllPosts } from '../apis/post';
@@ -29,6 +30,8 @@ export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
   let { data: posts } = useQuery('posts', getAllPosts);
+  let { navigate } = useNavigation();
+
   let [isTypingComment, setTypingComment] = useState(false);
   let [keyboardHeight, setKeyboardHeight] = useState(0);
 
@@ -101,7 +104,7 @@ export default function Feed() {
                 </Text>
               </View>
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => navigate('Comments')}
                 style={{ marginHorizontal: 12, marginTop: 12 }}
               >
                 <Text weight="light" style={{ color: '#555' }}>
@@ -170,7 +173,7 @@ export default function Feed() {
 
 const styles = StyleSheet.create({
   root: {
-    paddingTop: Constants.statusBarHeight,
+    // paddingTop: Constants.statusBarHeight,
   },
   itemHeader: {
     flexDirection: 'row',
