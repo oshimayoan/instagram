@@ -15,8 +15,9 @@ import {
   StyleSheet,
 } from 'react-native';
 import { useQuery } from 'react-query';
-import { Text, TextInput } from 'exoflex';
+import { Text, TextInput, Label } from 'exoflex';
 import Constants from 'expo-constants';
+import { format } from 'timeago.js';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { getAllPosts } from '../apis/post';
@@ -73,9 +74,9 @@ export default function Feed() {
         onScrollEndDrag={updateCurrentOffset}
         onMomentumScrollEnd={updateCurrentOffset}
         renderItem={({ item: post }) => {
-          let { user, images, description } = post;
+          let { user, images, description, created_at: createdAt } = post;
           return (
-            <View style={{ marginBottom: 24 }}>
+            <View style={{ marginBottom: 32 }}>
               <View style={styles.itemHeader}>
                 <Image
                   source={{
@@ -91,10 +92,23 @@ export default function Feed() {
               />
               <TouchableOpacity
                 onPress={openCommentInput}
-                style={{ padding: 16 }}
+                style={{
+                  paddingVertical: 16,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                }}
               >
+                <Image
+                  source={{
+                    uri: `${DEV_API}${user.photo.formats.thumbnail.url}`,
+                  }}
+                  style={styles.itemProfileImage}
+                />
                 <Text>Add a comment...</Text>
               </TouchableOpacity>
+              <Label style={{ marginHorizontal: 12, color: '#555' }}>
+                {format(createdAt)}
+              </Label>
             </View>
           );
         }}
@@ -128,10 +142,10 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   itemProfileImage: {
-    width: 36,
-    height: 36,
+    width: 28,
+    height: 28,
     borderRadius: 18,
-    marginHorizontal: 16,
+    marginHorizontal: 12,
   },
   itemImage: {
     flex: 1,
