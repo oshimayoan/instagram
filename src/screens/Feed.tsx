@@ -91,9 +91,25 @@ export default function Feed() {
                 style={styles.itemImage}
               />
               <TouchableOpacity
+                onPress={() => {}}
+                style={{ marginHorizontal: 12, marginTop: 12 }}
+              >
+                <Text>View all x comments</Text>
+              </TouchableOpacity>
+              <View
+                style={{
+                  marginHorizontal: 12,
+                  marginTop: 12,
+                }}
+              >
+                <Text>
+                  <Text weight="bold">oliviachg</Text> Hey, awesome bike!
+                </Text>
+              </View>
+              <TouchableOpacity
                 onPress={openCommentInput}
                 style={{
-                  paddingVertical: 16,
+                  paddingVertical: 12,
                   flexDirection: 'row',
                   alignItems: 'center',
                 }}
