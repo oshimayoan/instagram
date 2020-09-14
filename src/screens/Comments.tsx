@@ -1,9 +1,23 @@
-import React from 'react';
-import { View, FlatList, StyleSheet } from 'react-native';
-import { Text, ActivityIndicator, Subtitle, Avatar, Label } from 'exoflex';
+import React, { useEffect, useState } from 'react';
+import {
+  View,
+  FlatList,
+  StyleSheet,
+  Keyboard,
+  KeyboardEvent,
+} from 'react-native';
+import {
+  Text,
+  ActivityIndicator,
+  Subtitle,
+  Avatar,
+  Label,
+  TextInput,
+} from 'exoflex';
 import { useRoute } from '@react-navigation/native';
 import { useRecoilValue } from 'recoil';
 import { format } from 'timeago.js';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useComments } from '../apis/comment';
 import { postsState } from '../atoms/posts';
@@ -12,6 +26,25 @@ import { DEV_API } from '../constants/api';
 export default function Comments() {
   let { params } = useRoute();
   let { isLoading, comments } = useComments(params?.postId);
+  let insets = useSafeAreaInsets();
+
+  let [keyboardHeight, setKeyboardHeight] = useState(insets.bottom);
+
+  let isKeyboardVisible = keyboardHeight > insets.bottom;
+
+  useEffect(() => {
+    Keyboard.addListener('keyboardDidShow', keyboardDidShow);
+    Keyboard.addListener('keyboardDidHide', keyboardDidHide);
+    return () => {
+      Keyboard.removeListener('keyboardDidShow', keyboardDidShow);
+      Keyboard.removeListener('keyboardDidHide', keyboardDidHide);
+    };
+  }, []);
+
+  let keyboardDidShow = (e: KeyboardEvent) =>
+    setKeyboardHeight(e.endCoordinates.height);
+
+  let keyboardDidHide = () => setKeyboardHeight(insets.bottom);
 
   if (isLoading) {
     return (
@@ -22,45 +55,67 @@ export default function Comments() {
   }
 
   return (
-    <FlatList
-      keyExtractor={(_item, index) => index.toString()}
-      data={comments}
-      ListEmptyComponent={() => (
-        <View style={styles.emptyWrapper}>
-          <Subtitle>There is no comments</Subtitle>
-        </View>
-      )}
-      contentContainerStyle={styles.container}
-      renderItem={({ item }) => {
-        let { user, content, created_at: createdAt } = item;
-        return (
-          <View style={styles.commentWrapper}>
-            <Avatar.Image
-              source={{
-                uri: `${DEV_API}${user.photo.formats.thumbnail.url}`,
-              }}
-              size={40}
-            />
-            <View style={styles.commentContent}>
-              <View>
-                <Text>
-                  <Text weight="medium" style={styles.commentUsername}>
-                    {user.username}
+    <>
+      <FlatList
+        keyExtractor={(_item, index) => index.toString()}
+        data={comments}
+        ListEmptyComponent={() => (
+          <View style={styles.emptyWrapper}>
+            <Subtitle>There is no comments</Subtitle>
+          </View>
+        )}
+        contentContainerStyle={styles.container}
+        renderItem={({ item }) => {
+          let { user, content, created_at: createdAt } = item;
+          return (
+            <View style={styles.commentWrapper}>
+              <Avatar.Image
+                source={{
+                  uri: `${DEV_API}${user.photo.formats.thumbnail.url}`,
+                }}
+                size={40}
+              />
+              <View style={styles.commentContent}>
+                <View>
+                  <Text>
+                    <Text weight="medium" style={styles.commentUsername}>
+                      {user.username}
+                    </Text>
+                    {` `}
+                    {content}
                   </Text>
-                  {` `}
-                  {content}
-                </Text>
-              </View>
-              <View style={styles.commentTime}>
-                <Label weight="light" style={styles.time}>
-                  {format(createdAt)}
-                </Label>
+                </View>
+                <View style={styles.commentTime}>
+                  <Label weight="light" style={styles.time}>
+                    {format(createdAt)}
+                  </Label>
+                </View>
               </View>
             </View>
-          </View>
-        );
-      }}
-    />
+          );
+        }}
+      />
+      <View
+        style={[
+          styles.inputWrapper,
+          {
+            bottom: keyboardHeight,
+          },
+        ]}
+      >
+        <TextInput
+          autoFocus
+          placeholder="Add a comment..."
+          // value={newComment}
+          // onChangeText={(text) => setNewComment(text)}
+          // onSubmitEditing={closeCommentInput}
+          containerStyle={{
+            marginHorizontal: isKeyboardVisible ? 0 : 24,
+            borderRadius: isKeyboardVisible ? 0 : 48,
+          }}
+        />
+      </View>
+    </>
   );
 }
 
@@ -88,5 +143,10 @@ const styles = StyleSheet.create({
   },
   time: {
     color: '#555',
+  },
+  inputWrapper: {
+    left: 0,
+    right: 0,
+    position: 'absolute',
   },
 });
