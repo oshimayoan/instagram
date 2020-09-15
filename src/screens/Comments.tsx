@@ -58,13 +58,14 @@ export default function Comments() {
     <>
       <FlatList
         keyExtractor={(_item, index) => index.toString()}
-        data={comments}
+        data={[...comments, ...comments, ...comments, ...comments, ...comments]}
         ListEmptyComponent={() => (
           <View style={styles.emptyWrapper}>
             <Subtitle>There is no comments</Subtitle>
           </View>
         )}
         contentContainerStyle={styles.container}
+        style={{ flex: 1 }}
         renderItem={({ item }) => {
           let { user, content, created_at: createdAt } = item;
           return (
@@ -96,12 +97,9 @@ export default function Comments() {
         }}
       />
       <View
-        style={[
-          styles.inputWrapper,
-          {
-            bottom: keyboardHeight,
-          },
-        ]}
+        style={{
+          marginBottom: keyboardHeight,
+        }}
       >
         <TextInput
           autoFocus
@@ -110,7 +108,7 @@ export default function Comments() {
           // onChangeText={(text) => setNewComment(text)}
           // onSubmitEditing={closeCommentInput}
           containerStyle={{
-            marginHorizontal: isKeyboardVisible ? 0 : 24,
+            margin: isKeyboardVisible ? 0 : 24,
             borderRadius: isKeyboardVisible ? 0 : 48,
           }}
         />
@@ -143,10 +141,5 @@ const styles = StyleSheet.create({
   },
   time: {
     color: '#555',
-  },
-  inputWrapper: {
-    left: 0,
-    right: 0,
-    position: 'absolute',
   },
 });
