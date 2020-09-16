@@ -137,6 +137,7 @@ export default function Comments() {
         >
           <TextInput
             autoFocus
+            returnKeyType="send"
             placeholder="Add a comment..."
             value={newComment}
             onChangeText={(text) => setNewComment(text)}
