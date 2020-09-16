@@ -1,1 +1,1 @@
-export const DEV_API = 'http://localhost:1337';
+export const DEV_API = 'http://192.168.0.101:1337';
