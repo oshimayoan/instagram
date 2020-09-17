@@ -15,23 +15,35 @@ export type Image = {
   };
 };
 
+export type HighligtedComment = {
+  id: number;
+  content: string;
+  postId: number;
+  user: {
+    id: number;
+    username: string;
+  };
+  createdAt: string;
+};
+
 export type Post = {
   id: number;
   description: string;
   user: User;
   images: Array<Image>;
   comments: Array<Comment>;
+  highlightedComments: Array<HighligtedComment>;
   created_at: string;
 };
 
-export type PostList = Array<Post>;
+export type Posts = Array<Post>;
 
 export type PostListState = {
   key: 'posts';
-  default: PostList;
+  default: Posts;
 };
 
-export const postListState = atom<PostList>({
+export const postListState = atom<Posts>({
   key: 'posts',
   default: [],
 });

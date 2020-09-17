@@ -18,6 +18,7 @@ export function usePosts() {
     getAllPosts,
   );
   let [postList, setPostList] = useRecoilState(postListState);
+  let { addComment } = useCommentAction();
 
   useEffect(() => {
     !isLoading && data && setPostList(data);

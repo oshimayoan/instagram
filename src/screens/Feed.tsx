@@ -20,6 +20,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { usePosts } from '../apis/post';
+import { Post } from '../atoms/posts';
 import { DEV_API } from '../constants/api';
 
 const COMMENT_INPUT_POSITION = 568.5;
@@ -116,7 +117,7 @@ export default function Feed() {
 
   return (
     <View style={styles.root}>
-      <FlatList
+      <FlatList<Post>
         ref={flatList}
         keyExtractor={(_item, index) => index.toString()}
         data={posts}
@@ -125,15 +126,16 @@ export default function Feed() {
         style={{
           marginBottom: keyboardHeight > 0 ? marginWhenKeyboardVisible : 0,
         }}
-        renderItem={({ item: post }) => {
+        renderItem={({ item }) => {
           let {
             id,
             user,
             images,
             description,
             comments,
+            highlightedComments,
             created_at: createdAt,
-          } = post;
+          } = item;
           return (
             <View style={{ marginBottom: 32 }}>
               <View style={styles.itemHeader}>
@@ -159,7 +161,7 @@ export default function Feed() {
                   {` ${description}`}
                 </Text>
               </View>
-              {comments?.length > 0 && (
+              {comments.length > 0 && (
                 <>
                   <TouchableOpacity
                     onPress={() => navigate('Comments', { postId: id })}
@@ -169,19 +171,23 @@ export default function Feed() {
                       View all 3 comments
                     </Text>
                   </TouchableOpacity>
-                  <View
-                    style={{
-                      marginHorizontal: 12,
-                      marginTop: 12,
-                    }}
-                  >
-                    <Text>
-                      <Text weight="medium" style={{ color: '#000' }}>
-                        oliviachg
-                      </Text>{' '}
-                      {comments[0]?.content}
-                    </Text>
-                  </View>
+                  {highlightedComments.length > 0 && (
+                    <View
+                      style={{
+                        marginHorizontal: 12,
+                        marginTop: 12,
+                      }}
+                    >
+                      {highlightedComments.map((comment) => (
+                        <Text key={comment.id}>
+                          <Text weight="medium" style={{ color: '#000' }}>
+                            {comment.user.username}
+                          </Text>{' '}
+                          {comment.content}
+                        </Text>
+                      ))}
+                    </View>
+                  )}
                 </>
               )}
               <TouchableOpacity
