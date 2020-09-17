@@ -7,13 +7,12 @@ import {
   Avatar,
   Label,
   TextInput,
+  Toast,
 } from 'exoflex';
 import { useRoute } from '@react-navigation/native';
-import { useRecoilValue } from 'recoil';
 import { format } from 'timeago.js';
 
 import { useComments } from '../../apis/comment';
-import { postsState } from '../../atoms/posts';
 import { DEV_API } from '../../constants/api';
 import { IS_ANDROID } from '../../constants/constant';
 
@@ -21,7 +20,9 @@ import { useCommentInput } from './useCommentInput';
 
 export default function Comments() {
   let { params } = useRoute();
-  let { isLoading, comments } = useComments(params?.postId);
+  let { isLoading, isError, error, comments, addComment } = useComments(
+    params?.postId,
+  );
   let {
     inputMargin,
     inputRadius,
@@ -32,40 +33,23 @@ export default function Comments() {
   } = useCommentInput();
 
   let [newComment, setNewComment] = useState('');
-  let [isInit, setInit] = useState(true);
-  let [data, setData] = useState([]);
 
   useEffect(() => {
-    if (!isLoading && isInit) {
-      setInit(false);
-      setData(comments);
-    }
-  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+    isError &&
+      Toast.showToast({
+        message:
+          (error as { message: string })?.message ?? 'Something went wrong',
+        duration: 3000,
+        mode: 'error',
+      });
+  }, [isError]); // eslint-disable-line react-hooks/exhaustive-deps
 
   let submitComment = () => {
     if (!newComment.trim()) {
       return;
     }
-
-    let newCommentObj = {
-      id: new Date().getTime(),
-      content: newComment,
-      postId: params?.postId,
-      user: {
-        username: 'oshimayoan',
-        photo: {
-          formats: {
-            thumbnail: {
-              url: '/uploads/thumbnail_2019_11_18_0bf602eb36.jpg',
-            },
-          },
-        },
-      },
-      created_at: new Date().toISOString(),
-    };
-    let newComments = [...data, newCommentObj];
+    addComment(newComment);
     dismissKeyboard();
-    setData(newComments);
     setNewComment('');
   };
 
@@ -81,7 +65,7 @@ export default function Comments() {
     <>
       <FlatList
         keyExtractor={(_item, index) => index.toString()}
-        data={data}
+        data={comments}
         ListEmptyComponent={() => (
           <View style={styles.emptyWrapper}>
             <Subtitle>There is no comments</Subtitle>
