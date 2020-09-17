@@ -10,10 +10,10 @@ export let getAllComments = (postId: number) =>
     res.json(),
   );
 
-export function useCommentAction(postId: number) {
+export function useCommentAction() {
   let [commentList, setCommentList] = useRecoilState(commentListState);
 
-  let addComment = (comment: string) => {
+  let addComment = (postId: number, comment: string) => {
     let newComment = {
       id: new Date().getTime(),
       content: comment,
@@ -46,7 +46,7 @@ export function useComments(postId: number) {
     () => getAllComments(postId),
   );
   let [commentList, setCommentList] = useRecoilState(commentListState);
-  let { addComment } = useCommentAction(postId);
+  let { addComment: addCommentBase } = useCommentAction();
 
   useEffect(() => {
     if (!isLoading && data) {
@@ -57,6 +57,8 @@ export function useComments(postId: number) {
       setCommentList(newCommentList);
     }
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  let addComment = (comment: string) => addCommentBase(postId, comment);
 
   return {
     isLoading,
