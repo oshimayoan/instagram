@@ -19,9 +19,11 @@ import { Text, TextInput, Label } from 'exoflex';
 import Constants from 'expo-constants';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
+import { useRecoilState } from 'recoil';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { getAllPosts } from '../apis/post';
+import { postsState, Post, PostsState } from '../atoms/posts';
 import { DEV_API } from '../constants/api';
 
 const COMMENT_INPUT_POSITION = 568.5;
@@ -29,16 +31,31 @@ const COMMENT_INPUT_POSITION = 568.5;
 export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
-  let { data: posts } = useQuery('posts', getAllPosts);
+  let commentTextOffset = useRef(0);
+  let { isLoading, data } = useQuery<Array<Post>>('posts', getAllPosts);
   let { navigate } = useNavigation();
 
   let [isTypingComment, setTypingComment] = useState(false);
   let [keyboardHeight, setKeyboardHeight] = useState(0);
+  let [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  let [newComment, setNewComment] = useState('');
+  let [isInitFetch, setInitFetch] = useState(true);
+
+  let [posts, setPosts] = useRecoilState(postsState);
 
   let [animatedVisibility, animatedValue] = useFadingAnimation(
     isTypingComment,
     { duration: 150 },
   );
+
+  let marginWhenKeyboardVisible = keyboardHeight - 32;
+
+  useEffect(() => {
+    if (!isLoading && isInitFetch) {
+      !!data && setPosts(data);
+      setInitFetch(false);
+    }
+  }, [isLoading]);
 
   useEffect(() => {
     Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -49,19 +66,68 @@ export default function Feed() {
     };
   }, []);
 
+  useEffect(() => {
+    if (keyboardHeight > 0) {
+      let newOffset = currentOffset.current + commentTextOffset.current;
+      setTimeout(() => {
+        flatList.current?.scrollToOffset({
+          offset: newOffset,
+        });
+      }, 100);
+    }
+  }, [keyboardHeight]);
+
   let keyboardDidShow = (e: KeyboardEvent) =>
     setKeyboardHeight(e.endCoordinates.height);
 
-  let closeCommentInput = () => setTypingComment(false);
+  let storeNewComment = (postId: number, comment: string) => {
+    // let newPosts = posts.map((post) => {
+    // let addedComment = {
+    // id: new Date().getTime(),
+    // content: comment,
+    // isNew: true,
+    // };
+    // if (post.id !== postId) {
+    // return post;
+    // }
+    // return {
+    // ...post,
+    // comments: [...post.comments, addedComment],
+    // };
+    // });
+    let index = posts.findIndex((post) => post.id === postId);
+    let addedComment = {
+      id: new Date().getTime(),
+      content: comment,
+      isNew: true,
+    };
+    let newPost = {
+      ...posts[index],
+      comments: [...posts[index].comments, addedComment],
+    };
+    let newPosts = [
+      ...posts.slice(0, index),
+      newPost,
+      ...posts.slice(index + 1),
+    ];
+    setPosts(newPosts);
+  };
 
-  let openCommentInput = (e: GestureResponderEvent) => {
+  let closeCommentInput = () => {
+    setKeyboardHeight(0);
+    setTypingComment(false);
+    if (selectedPostId) {
+      storeNewComment(selectedPostId, newComment);
+      setSelectedPostId(null);
+      setNewComment('');
+    }
+  };
+
+  let openCommentInput = (e: GestureResponderEvent, postId: number) => {
     let offset = e.nativeEvent.pageY - COMMENT_INPUT_POSITION;
-    let newOffset = currentOffset.current + offset;
-    flatList &&
-      flatList.current?.scrollToOffset({
-        offset: newOffset,
-      });
+    commentTextOffset.current = offset;
     setTypingComment(true);
+    setSelectedPostId(postId);
   };
 
   let updateCurrentOffset = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -76,8 +142,18 @@ export default function Feed() {
         data={posts || []}
         onScrollEndDrag={updateCurrentOffset}
         onMomentumScrollEnd={updateCurrentOffset}
+        style={{
+          marginBottom: keyboardHeight > 0 ? marginWhenKeyboardVisible : 0,
+        }}
         renderItem={({ item: post }) => {
-          let { user, images, description, created_at: createdAt } = post;
+          let {
+            id,
+            user,
+            images,
+            description,
+            comments,
+            created_at: createdAt,
+          } = post;
           return (
             <View style={{ marginBottom: 32 }}>
               <View style={styles.itemHeader}>
@@ -103,29 +179,41 @@ export default function Feed() {
                   {` ${description}`}
                 </Text>
               </View>
+              {comments?.length > 0 && (
+                <>
+                  <TouchableOpacity
+                    onPress={() => navigate('Comments', { postId: id })}
+                    style={{ marginHorizontal: 12, marginTop: 12 }}
+                  >
+                    <Text weight="light" style={{ color: '#555' }}>
+                      View all 3 comments
+                    </Text>
+                  </TouchableOpacity>
+                  <View
+                    style={{
+                      marginHorizontal: 12,
+                      marginTop: 12,
+                    }}
+                  >
+                    <Text>
+                      <Text weight="medium" style={{ color: '#000' }}>
+                        oliviachg
+                      </Text>{' '}
+                      {comments[0]?.content}
+                    </Text>
+                    {!!newComment.content && (
+                      <Text>
+                        <Text weight="medium" style={{ color: '#000' }}>
+                          oshimayoan
+                        </Text>{' '}
+                        {newComment.content}
+                      </Text>
+                    )}
+                  </View>
+                </>
+              )}
               <TouchableOpacity
-                onPress={() => navigate('Comments')}
-                style={{ marginHorizontal: 12, marginTop: 12 }}
-              >
-                <Text weight="light" style={{ color: '#555' }}>
-                  View all 3 comments
-                </Text>
-              </TouchableOpacity>
-              <View
-                style={{
-                  marginHorizontal: 12,
-                  marginTop: 12,
-                }}
-              >
-                <Text>
-                  <Text weight="medium" style={{ color: '#000' }}>
-                    oliviachg
-                  </Text>{' '}
-                  Hey, awesome bike!
-                </Text>
-              </View>
-              <TouchableOpacity
-                onPress={openCommentInput}
+                onPress={(e) => openCommentInput(e, id)}
                 style={{
                   paddingVertical: 12,
                   flexDirection: 'row',
@@ -163,7 +251,13 @@ export default function Feed() {
               opacity: animatedValue,
             }}
           >
-            <TextInput autoFocus placeholder="Add a comment..." />
+            <TextInput
+              autoFocus
+              placeholder="Add a comment..."
+              value={newComment}
+              onChangeText={(text) => setNewComment(text)}
+              onSubmitEditing={closeCommentInput}
+            />
           </Animated.View>
         </Modal>
       )}
