@@ -1,15 +1,6 @@
 import { atom } from 'recoil';
 
-type User = {
-  username: string;
-  photo: {
-    formats: {
-      thumbnail: {
-        url: string;
-      };
-    };
-  };
-};
+import { User } from '../types/User';
 
 export type Comment = {
   id: number;
