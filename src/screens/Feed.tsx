@@ -14,16 +14,12 @@ import {
   GestureResponderEvent,
   StyleSheet,
 } from 'react-native';
-import { useQuery } from 'react-query';
-import { Text, TextInput, Label } from 'exoflex';
-import Constants from 'expo-constants';
+import { Text, TextInput, Label, ActivityIndicator } from 'exoflex';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
-import { useRecoilState } from 'recoil';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
-import { getAllPosts } from '../apis/post';
-import { postsState, Post, PostsState } from '../atoms/posts';
+import { usePosts } from '../apis/post';
 import { DEV_API } from '../constants/api';
 
 const COMMENT_INPUT_POSITION = 568.5;
@@ -32,16 +28,13 @@ export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
   let commentTextOffset = useRef(0);
-  let { isLoading, data } = useQuery<Array<Post>>('posts', getAllPosts);
+  let { isLoading, posts } = usePosts();
   let { navigate } = useNavigation();
 
   let [isTypingComment, setTypingComment] = useState(false);
   let [keyboardHeight, setKeyboardHeight] = useState(0);
   let [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   let [newComment, setNewComment] = useState('');
-  let [isInitFetch, setInitFetch] = useState(true);
-
-  let [posts, setPosts] = useRecoilState(postsState);
 
   let [animatedVisibility, animatedValue] = useFadingAnimation(
     isTypingComment,
@@ -51,20 +44,13 @@ export default function Feed() {
   let marginWhenKeyboardVisible = keyboardHeight - 32;
 
   useEffect(() => {
-    if (!isLoading && isInitFetch) {
-      !!data && setPosts(data);
-      setInitFetch(false);
-    }
-  }, [isLoading]);
-
-  useEffect(() => {
     Keyboard.addListener('keyboardDidShow', keyboardDidShow);
     Keyboard.addListener('keyboardDidHide', closeCommentInput);
     return () => {
       Keyboard.removeListener('keyboardDidShow', keyboardDidShow);
       Keyboard.removeListener('keyboardDidHide', closeCommentInput);
     };
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (keyboardHeight > 0) {
@@ -81,36 +67,22 @@ export default function Feed() {
     setKeyboardHeight(e.endCoordinates.height);
 
   let storeNewComment = (postId: number, comment: string) => {
-    // let newPosts = posts.map((post) => {
+    // let index = posts.findIndex((post) => post.id === postId);
     // let addedComment = {
     // id: new Date().getTime(),
     // content: comment,
     // isNew: true,
     // };
-    // if (post.id !== postId) {
-    // return post;
-    // }
-    // return {
-    // ...post,
-    // comments: [...post.comments, addedComment],
+    // let newPost = {
+    // ...posts[index],
+    // comments: [...posts[index].comments, addedComment],
     // };
-    // });
-    let index = posts.findIndex((post) => post.id === postId);
-    let addedComment = {
-      id: new Date().getTime(),
-      content: comment,
-      isNew: true,
-    };
-    let newPost = {
-      ...posts[index],
-      comments: [...posts[index].comments, addedComment],
-    };
-    let newPosts = [
-      ...posts.slice(0, index),
-      newPost,
-      ...posts.slice(index + 1),
-    ];
-    setPosts(newPosts);
+    // let newPosts = [
+    // ...posts.slice(0, index),
+    // newPost,
+    // ...posts.slice(index + 1),
+    // ];
+    // setPosts(newPosts);
   };
 
   let closeCommentInput = () => {
@@ -134,12 +106,20 @@ export default function Feed() {
     currentOffset.current = e.nativeEvent.contentOffset.y;
   };
 
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, paddingVertical: 50 }}>
+        <ActivityIndicator size="large" accessibilityStates={null} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.root}>
       <FlatList
         ref={flatList}
         keyExtractor={(_item, index) => index.toString()}
-        data={posts || []}
+        data={posts}
         onScrollEndDrag={updateCurrentOffset}
         onMomentumScrollEnd={updateCurrentOffset}
         style={{
@@ -201,14 +181,6 @@ export default function Feed() {
                       </Text>{' '}
                       {comments[0]?.content}
                     </Text>
-                    {!!newComment.content && (
-                      <Text>
-                        <Text weight="medium" style={{ color: '#000' }}>
-                          oshimayoan
-                        </Text>{' '}
-                        {newComment.content}
-                      </Text>
-                    )}
                   </View>
                 </>
               )}
