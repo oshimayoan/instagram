@@ -10,22 +10,8 @@ export let getAllComments = (postId: number) =>
     res.json(),
   );
 
-export function useComments(postId: number) {
-  let { isLoading, data, error, isError } = useQuery<Array<Comment>>(
-    'comments',
-    () => getAllComments(postId),
-  );
+export function useCommentAction(postId: number) {
   let [commentList, setCommentList] = useRecoilState(commentListState);
-
-  useEffect(() => {
-    if (!isLoading && data) {
-      let newCommentList = {
-        ...commentList,
-        [postId.toString()]: data,
-      };
-      setCommentList(newCommentList);
-    }
-  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   let addComment = (comment: string) => {
     let newComment = {
@@ -50,6 +36,27 @@ export function useComments(postId: number) {
     };
     setCommentList(newCommentList);
   };
+
+  return { addComment };
+}
+
+export function useComments(postId: number) {
+  let { isLoading, data, error, isError } = useQuery<Array<Comment>>(
+    'comments',
+    () => getAllComments(postId),
+  );
+  let [commentList, setCommentList] = useRecoilState(commentListState);
+  let { addComment } = useCommentAction(postId);
+
+  useEffect(() => {
+    if (!isLoading && data) {
+      let newCommentList = {
+        ...commentList,
+        [postId.toString()]: data,
+      };
+      setCommentList(newCommentList);
+    }
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isLoading,
