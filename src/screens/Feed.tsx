@@ -29,7 +29,7 @@ export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
   let commentTextOffset = useRef(0);
-  let { isLoading, posts } = usePosts();
+  let { isLoading, posts, addComment } = usePosts();
   let { navigate } = useNavigation();
 
   let [isTypingComment, setTypingComment] = useState(false);
@@ -51,7 +51,7 @@ export default function Feed() {
       Keyboard.removeListener('keyboardDidShow', keyboardDidShow);
       Keyboard.removeListener('keyboardDidHide', closeCommentInput);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (keyboardHeight > 0) {
@@ -67,33 +67,18 @@ export default function Feed() {
   let keyboardDidShow = (e: KeyboardEvent) =>
     setKeyboardHeight(e.endCoordinates.height);
 
-  let storeNewComment = (postId: number, comment: string) => {
-    // let index = posts.findIndex((post) => post.id === postId);
-    // let addedComment = {
-    // id: new Date().getTime(),
-    // content: comment,
-    // isNew: true,
-    // };
-    // let newPost = {
-    // ...posts[index],
-    // comments: [...posts[index].comments, addedComment],
-    // };
-    // let newPosts = [
-    // ...posts.slice(0, index),
-    // newPost,
-    // ...posts.slice(index + 1),
-    // ];
-    // setPosts(newPosts);
+  let submitComment = () => {
+    if (selectedPostId && newComment.trim()) {
+      addComment(selectedPostId, newComment);
+    }
+    closeCommentInput();
   };
 
   let closeCommentInput = () => {
     setKeyboardHeight(0);
     setTypingComment(false);
-    if (selectedPostId) {
-      storeNewComment(selectedPostId, newComment);
-      setSelectedPostId(null);
-      setNewComment('');
-    }
+    setSelectedPostId(null);
+    setNewComment('');
   };
 
   let openCommentInput = (e: GestureResponderEvent, postId: number) => {
@@ -135,6 +120,7 @@ export default function Feed() {
             comments,
             highlightedComments,
             created_at: createdAt,
+            totalComments = comments.length,
           } = item;
           return (
             <View style={{ marginBottom: 32 }}>
@@ -161,14 +147,14 @@ export default function Feed() {
                   {` ${description}`}
                 </Text>
               </View>
-              {comments.length > 0 && (
+              {totalComments > 0 && (
                 <>
                   <TouchableOpacity
                     onPress={() => navigate('Comments', { postId: id })}
                     style={{ marginHorizontal: 12, marginTop: 12 }}
                   >
                     <Text weight="light" style={{ color: '#555' }}>
-                      View all 3 comments
+                      View all {totalComments} comments
                     </Text>
                   </TouchableOpacity>
                   {highlightedComments.length > 0 && (
@@ -234,7 +220,7 @@ export default function Feed() {
               placeholder="Add a comment..."
               value={newComment}
               onChangeText={(text) => setNewComment(text)}
-              onSubmitEditing={closeCommentInput}
+              onSubmitEditing={submitComment}
             />
           </Animated.View>
         </Modal>

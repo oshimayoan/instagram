@@ -1,8 +1,11 @@
 import { useEffect } from 'react';
 import { useQuery } from 'react-query';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { postListState, Post } from '../atoms/posts';
+import { commentListState } from '../atoms/comments';
+import { combineData } from '../helpers/combineData';
+import { sortByDate } from '../helpers/sort';
 import { DEV_API } from '../constants/api';
 
 import { useCommentAction } from './comment';
@@ -18,7 +21,26 @@ export function usePosts() {
     getAllPosts,
   );
   let [postList, setPostList] = useRecoilState(postListState);
+  let commentList = useRecoilValue(commentListState);
   let { addComment } = useCommentAction();
+
+  let posts = postList.map((post) => {
+    let relatedComments = commentList[post.id.toString()] ?? [];
+    let highlightedComments = combineData(
+      relatedComments,
+      post.highlightedComments,
+    );
+    let sortedHighlightedComments = sortByDate(highlightedComments, 'asc');
+    let totalComments =
+      highlightedComments.length > post.comments.length
+        ? highlightedComments.length
+        : post.comments.length;
+    return {
+      ...post,
+      highlightedComments: sortedHighlightedComments.slice(-2),
+      totalComments,
+    };
+  });
 
   useEffect(() => {
     !isLoading && data && setPostList(data);
@@ -28,6 +50,7 @@ export function usePosts() {
     isLoading,
     isError,
     error,
-    posts: postList,
+    addComment,
+    posts,
   };
 }

@@ -32,7 +32,8 @@ export type Post = {
   user: User;
   images: Array<Image>;
   comments: Array<Comment>;
-  highlightedComments: Array<HighligtedComment>;
+  highlightedComments: Array<HighligtedComment | Comment>;
+  totalComments?: number;
   created_at: string;
 };
 

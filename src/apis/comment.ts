@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useQuery } from 'react-query';
 import { useRecoilState } from 'recoil';
 
 import { commentListState, Comment } from '../atoms/comments';
+import { combineData } from '../helpers/combineData';
+import { sortByDate } from '../helpers/sort';
 import { DEV_API } from '../constants/api';
 
 export let getAllComments = (postId: number) =>
@@ -30,9 +32,10 @@ export function useCommentAction() {
       },
       created_at: new Date().toISOString(),
     };
+    let oldComments = commentList[postId.toString()] ?? [];
     let newCommentList = {
       ...commentList,
-      [postId.toString()]: [...commentList[postId.toString()], newComment],
+      [postId.toString()]: [...oldComments, newComment],
     };
     setCommentList(newCommentList);
   };
@@ -42,7 +45,7 @@ export function useCommentAction() {
 
 export function useComments(postId: number) {
   let { isLoading, data, error, isError } = useQuery<Array<Comment>>(
-    'comments',
+    ['comments', { postId }],
     () => getAllComments(postId),
   );
   let [commentList, setCommentList] = useRecoilState(commentListState);
@@ -50,9 +53,12 @@ export function useComments(postId: number) {
 
   useEffect(() => {
     if (!isLoading && data) {
+      let key = postId.toString();
+      let initialData = commentList[key] || [];
+      let newComments = sortByDate(combineData(data, initialData), 'asc');
       let newCommentList = {
         ...commentList,
-        [postId.toString()]: data,
+        [key]: newComments,
       };
       setCommentList(newCommentList);
     }
