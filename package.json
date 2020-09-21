@@ -31,7 +31,7 @@
 		"react-native-screens": "~2.9.0",
 		"react-native-svg": "12.1.0",
 		"react-native-web": "~0.11.7",
-		"react-query": "^2.12.1",
+		"react-query": "^2.23.0",
 		"recoil": "^0.0.10",
 		"timeago.js": "^4.0.2"
 	},
