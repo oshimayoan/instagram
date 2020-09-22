@@ -7,6 +7,11 @@ import { Comment } from './comments';
 export type Image = {
   id: number;
   formats: {
+    thumbnail: {
+      url: string;
+      width: number;
+      height: number;
+    };
     large: {
       url: string;
       width: number;
