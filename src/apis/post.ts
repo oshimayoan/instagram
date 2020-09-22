@@ -6,20 +6,24 @@ import { postListState, Post } from '../atoms/posts';
 import { commentListState } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
+import { persistCache } from '../helpers/persistCache';
 import { DEV_API } from '../constants/api';
+import { hydrationState } from '../atoms/hydration';
 
 import { useCommentAction } from './comment';
 
 export let getAllPosts = () =>
-  fetch(`${DEV_API}/posts?_limit=20&_sort=created_at:DESC`).then((res) =>
-    res.json(),
-  );
+  fetch(`${DEV_API}/posts?_limit=20&_sort=created_at:DESC`)
+    .then((res) => res.json())
+    .catch((e) => console.log(e.message));
 
 export function usePosts() {
-  let { isLoading, data, error, isError } = useQuery<Array<Post>>(
-    'posts',
-    getAllPosts,
-  );
+  let isHydrated = useRecoilValue(hydrationState);
+  let { isLoading, isFetching, data, refetch, error, isError } = useQuery<
+    Array<Post>
+  >('posts', getAllPosts, {
+    enabled: isHydrated,
+  });
   let [postList, setPostList] = useRecoilState(postListState);
   let commentList = useRecoilValue(commentListState);
   let { addComment } = useCommentAction();
@@ -43,12 +47,17 @@ export function usePosts() {
   });
 
   useEffect(() => {
-    !isLoading && data && setPostList(data);
-  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
+    if ((!isLoading || !isFetching) && data) {
+      persistCache('posts');
+      setPostList(data);
+    }
+  }, [isLoading, isFetching]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return {
     isLoading,
+    isFetching,
     isError,
+    refetch,
     error,
     addComment,
     posts,

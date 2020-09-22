@@ -14,7 +14,7 @@ import {
   GestureResponderEvent,
   StyleSheet,
 } from 'react-native';
-import { Text, TextInput, Label, ActivityIndicator } from 'exoflex';
+import { Text, TextInput, Label } from 'exoflex';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
 
@@ -29,7 +29,7 @@ export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
   let commentTextOffset = useRef(0);
-  let { isLoading, posts, addComment } = usePosts();
+  let { posts, addComment } = usePosts();
   let { navigate } = useNavigation();
 
   let [isTypingComment, setTypingComment] = useState(false);
@@ -91,14 +91,6 @@ export default function Feed() {
   let updateCurrentOffset = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
     currentOffset.current = e.nativeEvent.contentOffset.y;
   };
-
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, paddingVertical: 50 }}>
-        <ActivityIndicator size="large" accessibilityStates={null} />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.root}>
