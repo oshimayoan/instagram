@@ -5,6 +5,7 @@ import { useRecoilState } from 'recoil';
 import { commentListState, Comment } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
+import { usePersistCache } from '../helpers/persistCache';
 import { DEV_API } from '../constants/api';
 
 export let getAllComments = (postId: number) =>
@@ -50,6 +51,7 @@ export function useComments(postId: number) {
   );
   let [commentList, setCommentList] = useRecoilState(commentListState);
   let { addComment: addCommentBase } = useCommentAction();
+  let { persist } = usePersistCache();
 
   useEffect(() => {
     if (!isLoading && data) {
@@ -60,6 +62,7 @@ export function useComments(postId: number) {
         ...commentList,
         [key]: newComments,
       };
+      persist(['comments', { postId }]);
       setCommentList(newCommentList);
     }
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
