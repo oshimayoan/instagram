@@ -1,15 +1,16 @@
 import AsyncStorage from '@react-native-community/async-storage';
-import { queryCache, QueryCache } from 'react-query';
+import { queryCache, QueryCache, QueryKey } from 'react-query';
 import { dehydrate, DehydratedState } from 'react-query/hydration';
+import deepEqual from 'deep-equal';
 
 const QUERY_KEYS = 'queryKeys';
 
-export async function getExistingQueryKeys(): Promise<Array<string>> {
+export async function getExistingQueryKeys(): Promise<Array<unknown>> {
   let existingQueryKeys = await AsyncStorage.getItem(QUERY_KEYS);
   return existingQueryKeys ? JSON.parse(existingQueryKeys) : [];
 }
 
-export async function persistCache(queryKey: string) {
+export async function persistCache(queryKey: QueryKey) {
   // For now, let's skip persisting user cache
   if (queryKey === 'user') {
     return;
@@ -17,12 +18,17 @@ export async function persistCache(queryKey: string) {
 
   let dehydratedState = dehydrate(queryCache, {
     shouldDehydrate: (query) => {
-      return query.queryKey[0] === queryKey && query.state.status === 'success';
+      let isSameKey = deepEqual(query.queryKey, queryKey, { strict: true });
+      return isSameKey && query.state.status === 'success';
     },
   }).queries;
 
   let existingQueryKeys = await getExistingQueryKeys();
-  if (!existingQueryKeys.includes(queryKey)) {
+  let isExist =
+    existingQueryKeys.filter((existingKey) => deepEqual(existingKey, queryKey))
+      .length > 0;
+
+  if (!isExist) {
     let newExistingQueryKeys = [...existingQueryKeys, queryKey];
     await AsyncStorage.setItem(
       QUERY_KEYS,
@@ -31,7 +37,10 @@ export async function persistCache(queryKey: string) {
   }
 
   let cacheCandidate = dehydratedState.slice(0, 50);
-  await AsyncStorage.setItem(queryKey, JSON.stringify(cacheCandidate));
+  await AsyncStorage.setItem(
+    JSON.stringify(queryKey),
+    JSON.stringify(cacheCandidate),
+  );
 }
 
 export async function getDehydratedState(key: string): Promise<Array<unknown>> {
@@ -72,11 +81,11 @@ export function usePersistCache() {
     let existingQueryKeys = await getExistingQueryKeys();
 
     for (let key of existingQueryKeys) {
-      let dehydratedState = await getDehydratedState(key);
+      let dehydratedState = await getDehydratedState(JSON.stringify(key));
       let ds = { queries: dehydratedState };
       baseHydrate(queryCache, ds);
     }
   };
 
-  return { hydrate };
+  return { hydrate, persist: persistCache };
 }

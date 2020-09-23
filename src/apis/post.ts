@@ -6,7 +6,7 @@ import { postListState, Post } from '../atoms/posts';
 import { commentListState } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
-import { persistCache } from '../helpers/persistCache';
+import { usePersistCache } from '../helpers/persistCache';
 import { DEV_API } from '../constants/api';
 import { hydrationState } from '../atoms/hydration';
 
@@ -27,6 +27,7 @@ export function usePosts() {
   let [postList, setPostList] = useRecoilState(postListState);
   let commentList = useRecoilValue(commentListState);
   let { addComment } = useCommentAction();
+  let { persist } = usePersistCache();
 
   let posts = postList.map((post) => {
     let relatedComments = commentList[post.id.toString()] ?? [];
@@ -48,7 +49,7 @@ export function usePosts() {
 
   useEffect(() => {
     if ((!isLoading || !isFetching) && data) {
-      persistCache('posts');
+      persist(['posts']);
       setPostList(data);
     }
   }, [isLoading, isFetching]); // eslint-disable-line react-hooks/exhaustive-deps
