@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation } from 'react-query';
 import { useRecoilState } from 'recoil';
 
 import { commentListState, Comment } from '../atoms/comments';
@@ -13,8 +13,20 @@ export let getAllComments = (postId: number) =>
     res.json(),
   );
 
+type NewCommentData = Pick<Comment, 'content' | 'postId'> & {
+  user: { id: number };
+};
+
+export let createComment = async (data: NewCommentData) => {
+  let body = JSON.stringify(data);
+  return fetch(`${DEV_API}/comments`, { method: 'POST', body }).then((res) =>
+    res.json(),
+  );
+};
+
 export function useCommentAction() {
   let [commentList, setCommentList] = useRecoilState(commentListState);
+  let [mutate] = useMutation(createComment);
 
   let addComment = (postId: number, comment: string) => {
     let newComment = {
@@ -22,6 +34,7 @@ export function useCommentAction() {
       content: comment,
       postId,
       user: {
+        id: 1,
         username: 'oshimayoan',
         photo: {
           formats: {
@@ -39,6 +52,11 @@ export function useCommentAction() {
       [postId.toString()]: [...oldComments, newComment],
     };
     setCommentList(newCommentList);
+    mutate({
+      postId,
+      content: comment,
+      user: { id: 1 },
+    });
   };
 
   return { addComment };
