@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useQuery, useMutation } from 'react-query';
 import { useRecoilState } from 'recoil';
 
@@ -27,10 +27,12 @@ export let createComment = async (data: NewCommentData) => {
 export function useCommentAction() {
   let [commentList, setCommentList] = useRecoilState(commentListState);
   let [mutate] = useMutation(createComment);
+  let { persist } = usePersistCache();
 
   let addComment = (postId: number, comment: string) => {
+    let tempId = new Date().getTime();
     let newComment = {
-      id: new Date().getTime(),
+      id: tempId,
       content: comment,
       postId,
       user: {
@@ -56,7 +58,22 @@ export function useCommentAction() {
       postId,
       content: comment,
       user: { id: 1 },
-    });
+    })
+      .then((newComment) => {
+        let comments = newCommentList[postId.toString()];
+        let index = comments.findIndex((comment) => comment.id === tempId);
+        let mutatedCommentList = {
+          ...newCommentList,
+          [postId.toString()]: [
+            ...comments.slice(0, index),
+            newComment,
+            ...comments.slice(index + 1),
+          ],
+        };
+        setCommentList(mutatedCommentList);
+        persist(['comments', { postId }]);
+      })
+      .catch((e) => console.log('Something unexpected happen:', e));
   };
 
   return { addComment };
