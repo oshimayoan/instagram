@@ -31,18 +31,13 @@ export function usePosts() {
 
   let posts = postList.map((post) => {
     let relatedComments = commentList[post.id.toString()] ?? [];
-    let highlightedComments = combineData(
-      relatedComments,
-      post.highlightedComments,
-    );
-    let sortedHighlightedComments = sortByDate(highlightedComments, 'asc');
     let totalComments =
-      highlightedComments.length > post.comments.length
-        ? highlightedComments.length
+      relatedComments.length > post.comments.length
+        ? relatedComments.length
         : post.comments.length;
     return {
       ...post,
-      highlightedComments: sortedHighlightedComments.slice(-2),
+      highlightedComments: relatedComments.slice(-2),
       totalComments,
     };
   });
