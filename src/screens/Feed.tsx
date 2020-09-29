@@ -12,6 +12,7 @@ import {
   NativeScrollEvent,
   GestureResponderEvent,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import { Text, TextInput, Label } from 'exoflex';
 import { format } from 'timeago.js';
@@ -42,7 +43,10 @@ export default function Feed() {
     { duration: 150 },
   );
 
-  let marginWhenKeyboardVisible = keyboardHeight - 32;
+  let marginWhenKeyboardVisible = Platform.select({
+    ios: keyboardHeight - 32,
+    default: 0,
+  });
 
   useEffect(() => {
     Keyboard.addListener('keyboardDidShow', keyboardDidShow);
@@ -203,7 +207,10 @@ export default function Feed() {
           </TouchableWithoutFeedback>
           <Animated.View
             style={{
-              marginBottom: keyboardHeight,
+              marginBottom: Platform.select({
+                ios: keyboardHeight,
+                default: 0,
+              }),
               opacity: animatedValue,
             }}
           >
