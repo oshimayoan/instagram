@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery, useMutation, useQueryCache } from 'react-query';
 import { useRecoilState } from 'recoil';
 
 import { commentListState, Comment } from '../atoms/comments';
@@ -7,6 +7,7 @@ import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
 import { DEV_API } from '../constants/api';
+import { Posts } from '../atoms/posts';
 
 export let getAllComments = (postId: number) =>
   fetch(`${DEV_API}/comments?_limit=20&postId=${postId}`).then((res) =>
@@ -15,6 +16,7 @@ export let getAllComments = (postId: number) =>
 
 type NewCommentData = Pick<Comment, 'content' | 'postId'> & {
   user: { id: number };
+  post: { id: number };
 };
 
 export let createComment = async (data: NewCommentData) => {
@@ -28,6 +30,7 @@ export function useCommentAction() {
   let [commentList, setCommentList] = useRecoilState(commentListState);
   let [mutate] = useMutation(createComment);
   let { persist } = usePersistCache();
+  let queryCache = useQueryCache();
 
   let addComment = (postId: number, comment: string) => {
     let tempId = new Date().getTime();
@@ -58,20 +61,36 @@ export function useCommentAction() {
       postId,
       content: comment,
       user: { id: 1 },
+      post: { id: postId },
     })
       .then((newComment) => {
         let comments = newCommentList[postId.toString()];
         let index = comments.findIndex((comment) => comment.id === tempId);
+        let newComments = [
+          ...comments.slice(0, index),
+          newComment,
+          ...comments.slice(index + 1),
+        ];
         let mutatedCommentList = {
           ...newCommentList,
-          [postId.toString()]: [
-            ...comments.slice(0, index),
-            newComment,
-            ...comments.slice(index + 1),
-          ],
+          [postId.toString()]: newComments,
         };
         setCommentList(mutatedCommentList);
         persist(['comments', { postId }]);
+
+        // let cachedPosts = queryCache.getQueryData(['posts']) as Posts;
+        // let postIndex = cachedPosts.findIndex((post) => post.id === postId);
+        // let updatedPost = {
+        // ...cachedPosts[postIndex],
+        // highlightedComments: newComments,
+        // };
+        // let newCachedPosts = [
+        // ...cachedPosts.slice(0, postIndex),
+        // updatedPost,
+        // ...cachedPosts.slice(postIndex + 1),
+        // ];
+        // queryCache.setQueryData(['posts'], newCachedPosts);
+        // persist(['posts']);
       })
       .catch((e) => console.log('Something unexpected happen:', e));
   };
