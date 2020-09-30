@@ -4,7 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { IconButton } from 'exoflex';
 
-import { Comments, Feed, Profile } from '../screens';
+import { Comments, Feed, Login, Profile } from '../screens';
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -44,6 +44,11 @@ export default () => {
           headerBackImage: () => <IconButton icon="arrow-left" />,
         }}
       >
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Feed" component={FeedTab} />
         <Stack.Screen name="Comments" component={Comments} />
       </Stack.Navigator>
