@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useMutation } from 'react-query';
+import { useSetRecoilState, useRecoilValue } from 'recoil';
 import type { IVestResult } from 'vest';
 
 import baseValidate from '../validations/login';
 import { DEV_API } from '../constants/api';
+import { userState, tokenState } from '../atoms/user';
 import type { User } from '../types/User';
 
 type LoginParams = {
@@ -50,6 +52,8 @@ export function useAuth() {
   let [mutate, { isLoading, data }] = useMutation(getAuth);
   let [isError, setIsError] = useState(false);
   let [error, setError] = useState('');
+  let setUser = useSetRecoilState(userState);
+  let token = useRecoilValue(tokenState);
 
   useEffect(() => {
     if (!isLoading && data && (data as LoggedInError)?.statusCode) {
@@ -59,7 +63,11 @@ export function useAuth() {
     }
     setError('');
     setIsError(false);
-  }, [isLoading]);
+    if (!isLoading && data && (data as LoggedInUser)?.jwt) {
+      let { jwt } = data as LoggedInUser;
+      setUser({ jwt });
+    }
+  }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 
   let getValidationErrorMessages = (fieldName: 'username' | 'password') => {
     let errorMessages: Array<string> = [];
@@ -88,5 +96,12 @@ export function useAuth() {
     res && mutate(params);
   };
 
-  return { login, isError, isLoading, error, getValidationErrorMessages };
+  return {
+    login,
+    isError,
+    isLoading,
+    error,
+    getValidationErrorMessages,
+    isSignedin: !!token,
+  };
 }
