@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { View, Image, StyleSheet } from 'react-native';
-import { TextInput, Button } from 'exoflex';
-import type { IVestResult } from 'vest';
+import { View, Image, StyleSheet, Keyboard } from 'react-native';
+import { TextInput, Button, Toast } from 'exoflex';
 
-import baseValidate from '../validations/login';
+import { useAuth } from '../apis/auth';
 import Instagram from '../assets/instagram.png';
 
 export default function Login() {
   let [username, setUsername] = useState('');
   let [password, setPassword] = useState('');
-  let { getErrorMessages, validate } = useLoginValidation();
+  let {
+    login,
+    isError,
+    isLoading,
+    error,
+    getValidationErrorMessages,
+  } = useAuth();
+
+  let errorMessage = error ?? 'Something went wrong';
 
   let submit = () => {
+    Keyboard.dismiss();
     let data = {
-      username,
+      identifier: username,
       password,
     };
-    validate(data);
+    login(data);
   };
 
   return (
@@ -31,7 +39,7 @@ export default function Login() {
           keyboardType="email-address"
           placeholder="Username or email"
           value={username}
-          errorMessage={getErrorMessages('username')}
+          errorMessage={getValidationErrorMessages('username')}
           onChangeText={setUsername}
           containerStyle={styles.input}
         />
@@ -41,39 +49,24 @@ export default function Login() {
           returnKeyType="send"
           placeholder="Password"
           value={password}
-          errorMessage={getErrorMessages('password')}
+          errorMessage={getValidationErrorMessages('password')}
           onChangeText={setPassword}
           containerStyle={styles.input}
         />
-        <Button accessibilityStates onPress={submit}>
+        <Button
+          accessibilityStates
+          disabled={isLoading}
+          onPress={submit}
+          loading={isLoading}
+        >
           Sign in
         </Button>
       </View>
+      <Toast visible={isError} mode="error">
+        {errorMessage}
+      </Toast>
     </View>
   );
-}
-
-function useLoginValidation() {
-  let [results, setResults] = useState<IVestResult | null>(null);
-
-  let getErrorMessages = (fieldName: 'username' | 'password') => {
-    let errorMessages: Array<string> = [];
-    if (results) {
-      errorMessages = [
-        ...results?.getErrors(fieldName),
-        ...results?.getWarnings(fieldName),
-      ];
-    }
-
-    return errorMessages.length ? errorMessages[0] : undefined;
-  };
-
-  let validate = (data: Record<string, string>) => {
-    let res = baseValidate(data);
-    setResults(res);
-  };
-
-  return { validate, getErrorMessages };
 }
 
 const styles = StyleSheet.create({
