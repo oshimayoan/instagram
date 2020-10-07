@@ -7,6 +7,7 @@ import baseValidate from '../validations/login';
 import { DEV_API } from '../constants/api';
 import { userState, tokenState } from '../atoms/user';
 import type { User } from '../types/User';
+import type { Posts } from '../atoms/posts';
 
 type LoginParams = {
   identifier: string;
@@ -15,7 +16,7 @@ type LoginParams = {
 
 type LoggedInUser = {
   jwt: string;
-  user: User;
+  user: User & { posts: Posts };
 };
 
 type ErrorMessage = {
@@ -73,6 +74,7 @@ export function useAuth() {
         confirmed: user.confirmed,
         blocked: user.blocked,
         photo: user.photo,
+        totalPosts: user.posts.length,
       });
     }
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps

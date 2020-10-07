@@ -15,4 +15,5 @@ export type User = {
       };
     };
   };
+  totalPosts: number;
 };

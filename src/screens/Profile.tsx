@@ -1,6 +1,47 @@
 import React from 'react';
-import { View } from 'react-native';
+import { View, ScrollView, StyleSheet } from 'react-native';
+import { Image } from 'react-native-expo-image-cache';
+import { useRecoilValue } from 'recoil';
+import { Text, Subtitle } from 'exoflex';
+
+import { profileState } from '../atoms/user';
+import { DEV_API } from '../constants/api';
+import type { User } from '../types/User';
+
+const PROFILE_IMAGE_SIZE = 104;
 
 export default function Profile() {
-  return <View style={{ flex: 1, backgroundColor: 'blue' }} />;
+  let user = useRecoilValue(profileState) as User;
+  let photoUri = user?.photo?.formats?.thumbnail?.url ?? '';
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.avatarWrapper}>
+        <Image uri={`${DEV_API}${photoUri}`} style={styles.profileImage} />
+        <View style={styles.totalPosts}>
+          <Subtitle weight="bold">{user.totalPosts}</Subtitle>
+          <Text>Posts</Text>
+        </View>
+      </View>
+    </ScrollView>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    paddingVertical: 16,
+  },
+  avatarWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  totalPosts: {
+    alignItems: 'center',
+    marginHorizontal: 16,
+  },
+  profileImage: {
+    width: PROFILE_IMAGE_SIZE,
+    height: PROFILE_IMAGE_SIZE,
+    borderRadius: PROFILE_IMAGE_SIZE / 2,
+    marginHorizontal: 12,
+  },
+});

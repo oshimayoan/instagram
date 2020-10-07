@@ -26,3 +26,11 @@ export const usernameState = selector({
     return user.username;
   },
 });
+
+export const profileState = selector({
+  key: 'profileState',
+  get: ({ get }) => {
+    let { jwt, ...user } = get(userState);
+    return user;
+  },
+});
