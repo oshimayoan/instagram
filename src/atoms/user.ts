@@ -18,3 +18,11 @@ export const tokenState = selector({
     return user.jwt;
   },
 });
+
+export const usernameState = selector({
+  key: 'usernameState',
+  get: ({ get }) => {
+    let user = get(userState);
+    return user.username;
+  },
+});
