@@ -12,16 +12,22 @@ import { hydrationState } from '../atoms/hydration';
 
 import { useCommentAction } from './comment';
 
-export let getAllPosts = () =>
-  fetch(`${DEV_API}/posts?_limit=20&_sort=created_at:DESC`)
+export let getAllPosts = async (userId?: number) => {
+  let filters = '_limit=20&_sort=created_at:DESC';
+  if (userId != null) {
+    filters = `${filters}&user.id=${userId}`;
+  }
+  return fetch(`${DEV_API}/posts?${filters}`)
     .then((res) => res.json())
     .catch((e) => console.log(e.message));
+};
 
-export function usePosts() {
+export function usePosts(userId?: number) {
+  let postsKey = userId != null ? ['posts', { userId }] : 'posts';
   let isHydrated = useRecoilValue(hydrationState);
   let { isLoading, isFetching, data, refetch, error, isError } = useQuery<
     Array<Post>
-  >('posts', getAllPosts, {
+  >(postsKey, () => getAllPosts(userId), {
     enabled: isHydrated,
   });
   let [postList, setPostList] = useRecoilState(postListState);

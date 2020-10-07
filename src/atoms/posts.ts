@@ -1,8 +1,9 @@
-import { atom } from 'recoil';
+import { atom, selector } from 'recoil';
 
-import { User } from '../types/User';
+import type { User } from '../types/User';
 
 import { Comment } from './comments';
+import { profileState } from './user';
 
 export type Image = {
   id: number;
@@ -52,4 +53,14 @@ export type PostListState = {
 export const postListState = atom<Posts>({
   key: 'posts',
   default: [],
+});
+
+export const userPostListState = selector({
+  key: 'userPosts',
+  get: ({ get }) => {
+    let user = get(profileState) as User;
+    let posts = get(postListState);
+
+    return posts.filter((post) => post.user.id === user.id);
+  },
 });

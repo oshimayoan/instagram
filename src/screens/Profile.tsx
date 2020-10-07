@@ -1,38 +1,96 @@
 import React from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  Dimensions,
+  TouchableOpacity,
+} from 'react-native';
 import { Image } from 'react-native-expo-image-cache';
 import { useRecoilValue } from 'recoil';
 import { Text, Subtitle } from 'exoflex';
 
 import { profileState } from '../atoms/user';
+import { usePosts } from '../apis/post';
 import { DEV_API } from '../constants/api';
 import type { User } from '../types/User';
 
 const PROFILE_IMAGE_SIZE = 104;
+const DEVICE_WIDTH = Dimensions.get('window').width;
+const POST_COLUMNS = 3;
+const POST_IMAGE_HEIGHT =
+  DEVICE_WIDTH / POST_COLUMNS - StyleSheet.hairlineWidth * 2;
 
 export default function Profile() {
   let user = useRecoilValue(profileState) as User;
   let photoUri = user?.photo?.formats?.thumbnail?.url ?? '';
+  let avatarUri = `${DEV_API}${photoUri}`;
   let fullName = `${user.firstName} ${user.lastName}`;
+  let { posts } = usePosts(user.id);
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <FlatList
+      numColumns={POST_COLUMNS}
+      keyExtractor={({ id }) => id.toString()}
+      data={posts}
+      renderItem={({ item }) => {
+        let uri = DEV_API + item.images[0].formats.thumbnail.url;
+
+        return (
+          <TouchableOpacity
+            activeOpacity={0.6}
+            onPress={() => {}}
+            style={styles.post}
+          >
+            <Image uri={uri} style={styles.postImage} />
+          </TouchableOpacity>
+        );
+      }}
+      ListHeaderComponent={
+        <ProfileHeader
+          avatarUri={avatarUri}
+          fullName={fullName}
+          totalPosts={user.totalPosts}
+        />
+      }
+      contentContainerStyle={styles.container}
+      ListHeaderComponentStyle={styles.headerWrapper}
+    />
+  );
+}
+
+type ProfileHeaderProps = {
+  avatarUri: string;
+  fullName: string;
+  totalPosts: number;
+};
+
+function ProfileHeader(props: ProfileHeaderProps) {
+  let { avatarUri, fullName, totalPosts } = props;
+  return (
+    <>
       <View style={styles.avatarWrapper}>
-        <Image uri={`${DEV_API}${photoUri}`} style={styles.profileImage} />
+        <Image uri={avatarUri} style={styles.profileImage} />
         <View style={styles.totalPosts}>
-          <Subtitle weight="bold">{user.totalPosts}</Subtitle>
+          <Subtitle weight="bold">{totalPosts}</Subtitle>
           <Text>Posts</Text>
         </View>
       </View>
-      <Text weight="bold" style={{ marginVertical: 8 }}>
-        {fullName}
-      </Text>
-    </ScrollView>
+      <View style={{ marginVertical: 8 }}>
+        <Text weight="bold">{fullName}</Text>
+        <Text>Nice to meet you!</Text>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    padding: 16,
+    paddingVertical: 16,
+  },
+  headerWrapper: {
+    paddingHorizontal: 16,
+    marginBottom: 36,
   },
   avatarWrapper: {
     flexDirection: 'row',
@@ -47,6 +105,14 @@ const styles = StyleSheet.create({
     width: PROFILE_IMAGE_SIZE,
     height: PROFILE_IMAGE_SIZE,
     borderRadius: PROFILE_IMAGE_SIZE / 2,
-    marginHorizontal: 12,
+    marginHorizontal: 16,
+  },
+  post: {
+    flex: 1,
+    padding: StyleSheet.hairlineWidth,
+  },
+  postImage: {
+    flex: 1,
+    height: POST_IMAGE_HEIGHT,
   },
 });
