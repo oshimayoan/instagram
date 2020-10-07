@@ -104,8 +104,13 @@ export function useAuth() {
     res && mutate(params);
   };
 
+  let logout = () => {
+    setUser({ jwt: '' });
+  };
+
   return {
     login,
+    logout,
     isError,
     isLoading,
     error,

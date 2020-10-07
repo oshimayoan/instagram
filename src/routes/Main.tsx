@@ -41,7 +41,7 @@ function FeedTab() {
 }
 
 export default () => {
-  let { isSignedin } = useAuth();
+  let { isSignedin, logout } = useAuth();
   let username = useRecoilValue(usernameState);
   return (
     <NavigationContainer>
@@ -66,8 +66,12 @@ export default () => {
               options={({ route }) => {
                 let routeName = getFocusedRouteNameFromRoute(route) ?? 'Feed';
 
+                let isProfile = routeName === 'Profile';
                 return {
-                  headerTitle: routeName === 'Profile' ? username : routeName,
+                  headerTitle: isProfile ? username : routeName,
+                  headerRight: isProfile
+                    ? () => <IconButton icon="logout" onPress={logout} />
+                    : undefined,
                 };
               }}
             />
