@@ -64,8 +64,16 @@ export function useAuth() {
     setError('');
     setIsError(false);
     if (!isLoading && data && (data as LoggedInUser)?.jwt) {
-      let { jwt } = data as LoggedInUser;
-      setUser({ jwt });
+      let { jwt, user } = data as LoggedInUser;
+      setUser({
+        jwt,
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        confirmed: user.confirmed,
+        blocked: user.blocked,
+        photo: user.photo,
+      });
     }
   }, [isLoading]); // eslint-disable-line react-hooks/exhaustive-deps
 

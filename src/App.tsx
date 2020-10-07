@@ -12,6 +12,7 @@ import { usePersistCache } from './helpers/persistCache';
 import { hydrationState } from './atoms/hydration';
 import { userState } from './atoms/user';
 
+// AsyncStorage.removeItem('user');
 // AsyncStorage.clear();
 
 export default function App() {
