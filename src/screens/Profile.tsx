@@ -13,6 +13,7 @@ const PROFILE_IMAGE_SIZE = 104;
 export default function Profile() {
   let user = useRecoilValue(profileState) as User;
   let photoUri = user?.photo?.formats?.thumbnail?.url ?? '';
+  let fullName = `${user.firstName} ${user.lastName}`;
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.avatarWrapper}>
@@ -22,17 +23,21 @@ export default function Profile() {
           <Text>Posts</Text>
         </View>
       </View>
+      <Text weight="bold" style={{ marginVertical: 8 }}>
+        {fullName}
+      </Text>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    paddingVertical: 16,
+    padding: 16,
   },
   avatarWrapper: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginHorizontal: -16,
   },
   totalPosts: {
     alignItems: 'center',

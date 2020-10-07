@@ -2,6 +2,8 @@ export type User = {
   id: number;
   username: string;
   email: string;
+  firstName: string;
+  lastName: string;
   confirmed: boolean;
   blocked: boolean;
   photo: {

@@ -71,6 +71,8 @@ export function useAuth() {
         id: user.id,
         username: user.username,
         email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
         confirmed: user.confirmed,
         blocked: user.blocked,
         photo: user.photo,
