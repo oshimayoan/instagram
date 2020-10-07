@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryCache } from 'react-query';
-import { useRecoilState } from 'recoil';
+import { useRecoilState, useRecoilValue } from 'recoil';
 
 import { commentListState, Comment } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
@@ -8,6 +8,7 @@ import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
 import { DEV_API } from '../constants/api';
 import { Posts } from '../atoms/posts';
+import { userState } from '../atoms/user';
 
 export let getAllComments = (postId: number) =>
   fetch(`${DEV_API}/comments?_limit=20&postId=${postId}`).then((res) =>
@@ -31,6 +32,7 @@ export function useCommentAction() {
   let [mutate] = useMutation(createComment);
   let { persist } = usePersistCache();
   let queryCache = useQueryCache();
+  let user = useRecoilValue(userState);
 
   let addComment = (postId: number, comment: string) => {
     let tempId = new Date().getTime();
@@ -38,17 +40,7 @@ export function useCommentAction() {
       id: tempId,
       content: comment,
       postId,
-      user: {
-        id: 1,
-        username: 'oshimayoan',
-        photo: {
-          formats: {
-            thumbnail: {
-              url: '/uploads/thumbnail_2019_11_18_0bf602eb36.jpg',
-            },
-          },
-        },
-      },
+      user,
       created_at: new Date().toISOString(),
     };
     let oldComments = commentList[postId.toString()] ?? [];
