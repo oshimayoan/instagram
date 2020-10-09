@@ -8,7 +8,14 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { IconButton } from 'exoflex';
 import { useRecoilValue } from 'recoil';
 
-import { Comments, Feed, Login, Profile } from '../screens';
+import {
+  Comments,
+  Feed,
+  Login,
+  NewPost,
+  NewPostButton,
+  Profile,
+} from '../screens';
 import { useAuth } from '../apis/auth';
 import { usernameState } from '../atoms/user';
 
@@ -27,6 +34,8 @@ function FeedTab() {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === 'Profile') {
             iconName = focused ? 'account' : 'account-outline';
+          } else if (route.name === 'NewPost') {
+            iconName = 'plus-box-outline';
           }
 
           return <IconButton icon={iconName} size={size} color={color} />;
@@ -35,6 +44,11 @@ function FeedTab() {
       tabBarOptions={{ showLabel: false }}
     >
       <Tab.Screen name="Feed" component={Feed} />
+      <Tab.Screen
+        name="NewPost"
+        component={NewPost}
+        options={{ tabBarButton: () => <NewPostButton /> }}
+      />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>
   );
