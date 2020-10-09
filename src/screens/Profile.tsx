@@ -23,8 +23,7 @@ const POST_IMAGE_HEIGHT =
 
 export default function Profile() {
   let user = useRecoilValue(profileState) as User;
-  let photoUri = user?.photo?.formats?.thumbnail?.url ?? '';
-  let avatarUri = `${DEV_API}${photoUri}`;
+  let avatarUri = user?.photo?.formats?.thumbnail?.url ?? '';
   let fullName = `${user.firstName} ${user.lastName}`;
   let { posts } = usePosts(user.id);
 
@@ -70,7 +69,12 @@ function ProfileHeader(props: ProfileHeaderProps) {
   return (
     <>
       <View style={styles.avatarWrapper}>
-        <Image uri={avatarUri} style={styles.profileImage} />
+        <Image
+          uri={avatarUri}
+          preview={{ uri: avatarUri }}
+          tint="light"
+          style={styles.profileImage}
+        />
         <View style={styles.totalPosts}>
           <Subtitle weight="bold">{totalPosts}</Subtitle>
           <Text>Posts</Text>

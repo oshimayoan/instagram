@@ -14,7 +14,7 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import { Text, TextInput, Label, Subtitle, Title } from 'exoflex';
+import { Text, TextInput, Label, Title } from 'exoflex';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
 import { Image } from 'react-native-expo-image-cache';
@@ -22,7 +22,6 @@ import { Image } from 'react-native-expo-image-cache';
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { usePosts } from '../apis/post';
 import { Post } from '../atoms/posts';
-import { DEV_API } from '../constants/api';
 
 const COMMENT_INPUT_POSITION = 568.5;
 
@@ -127,7 +126,7 @@ export default function Feed() {
             <View style={{ marginBottom: 32 }}>
               <View style={styles.itemHeader}>
                 <Image
-                  uri={`${DEV_API}${user.photo.formats.thumbnail.url}`}
+                  uri={user.photo.formats.thumbnail.url}
                   style={styles.itemProfileImage}
                 />
                 <Text weight="medium" style={{ color: '#000' }}>
@@ -137,9 +136,9 @@ export default function Feed() {
               <Image
                 tint="light"
                 preview={{
-                  uri: `${DEV_API}${images[0].formats.thumbnail.url}`,
+                  uri: images[0].formats.thumbnail.url,
                 }}
-                uri={`${DEV_API}${images[0].formats.large.url}`}
+                uri={images[0].formats.large.url}
                 style={styles.itemImage}
               />
               <View style={{ marginHorizontal: 12, marginTop: 12 }}>
@@ -188,7 +187,7 @@ export default function Feed() {
                 }}
               >
                 <Image
-                  uri={`${DEV_API}${user.photo.formats.thumbnail.url}`}
+                  uri={user.photo.formats.thumbnail.url}
                   style={styles.itemProfileImage}
                 />
                 <Text weight="light" style={{ color: '#555' }}>

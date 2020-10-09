@@ -13,7 +13,6 @@ import { useRoute } from '@react-navigation/native';
 import { format } from 'timeago.js';
 
 import { useComments } from '../../apis/comment';
-import { DEV_API } from '../../constants/api';
 import { IS_ANDROID } from '../../constants/constant';
 
 import { useCommentInput } from './useCommentInput';
@@ -79,7 +78,7 @@ export default function Comments() {
             <View style={styles.commentWrapper}>
               <Avatar.Image
                 source={{
-                  uri: `${DEV_API}${user.photo.formats.thumbnail.url}`,
+                  uri: user.photo.formats.thumbnail.url,
                 }}
                 size={40}
               />
