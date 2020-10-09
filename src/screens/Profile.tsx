@@ -33,7 +33,7 @@ export default function Profile() {
       keyExtractor={({ id }) => id.toString()}
       data={posts}
       renderItem={({ item }) => {
-        let uri = DEV_API + item.images[0].formats.thumbnail.url;
+        let uri = item.images[0].formats.thumbnail.url;
 
         return (
           <TouchableOpacity
@@ -41,7 +41,12 @@ export default function Profile() {
             onPress={() => {}}
             style={styles.post}
           >
-            <Image uri={uri} style={styles.postImage} />
+            <Image
+              uri={uri}
+              preview={{ uri }}
+              tint="light"
+              style={styles.postImage}
+            />
           </TouchableOpacity>
         );
       }}
@@ -116,7 +121,7 @@ const styles = StyleSheet.create({
     padding: StyleSheet.hairlineWidth,
   },
   postImage: {
-    flex: 1,
+    width: POST_IMAGE_HEIGHT,
     height: POST_IMAGE_HEIGHT,
   },
 });
