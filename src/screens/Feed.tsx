@@ -29,13 +29,14 @@ export default function Feed() {
   let flatList = useRef<FlatList | null>(null);
   let currentOffset = useRef(0);
   let commentTextOffset = useRef(0);
-  let { posts, addComment } = usePosts();
+  let { posts, addComment, refetch } = usePosts();
   let { navigate } = useNavigation();
 
   let [isTypingComment, setTypingComment] = useState(false);
   let [keyboardHeight, setKeyboardHeight] = useState(0);
   let [selectedPostId, setSelectedPostId] = useState<number | null>(null);
   let [newComment, setNewComment] = useState('');
+  let [isRefreshing, setRefreshing] = useState(false);
 
   let [animatedVisibility, animatedValue] = useFadingAnimation(
     isTypingComment,
@@ -95,6 +96,13 @@ export default function Feed() {
     currentOffset.current = e.nativeEvent.contentOffset.y;
   };
 
+  let refresh = () => {
+    setRefreshing(true);
+    refetch()
+      .then(() => setRefreshing(false))
+      .catch(() => setRefreshing(false));
+  };
+
   return (
     <View style={styles.root}>
       <FlatList<Post>
@@ -103,6 +111,8 @@ export default function Feed() {
         data={posts}
         onScrollEndDrag={updateCurrentOffset}
         onMomentumScrollEnd={updateCurrentOffset}
+        refreshing={isRefreshing}
+        onRefresh={refresh}
         style={{
           marginBottom: keyboardHeight > 0 ? marginWhenKeyboardVisible : 0,
         }}
