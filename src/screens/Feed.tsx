@@ -14,7 +14,7 @@ import {
   StyleSheet,
   Platform,
 } from 'react-native';
-import { Text, TextInput, Label } from 'exoflex';
+import { Text, TextInput, Label, Subtitle, Title } from 'exoflex';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
 import { Image } from 'react-native-expo-image-cache';
@@ -107,6 +107,11 @@ export default function Feed() {
         style={{
           marginBottom: keyboardHeight > 0 ? marginWhenKeyboardVisible : 0,
         }}
+        ListEmptyComponent={
+          <View style={styles.emptyTextWrapper}>
+            <Title style={{ color: 'grey' }}>There is no post yet</Title>
+          </View>
+        }
         renderItem={({ item }) => {
           let {
             id,
@@ -231,6 +236,11 @@ export default function Feed() {
 const styles = StyleSheet.create({
   root: {
     // paddingTop: Constants.statusBarHeight,
+  },
+  emptyTextWrapper: {
+    paddingVertical: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   itemHeader: {
     flexDirection: 'row',
