@@ -4,14 +4,33 @@ import { IconButton, Button, TextInput } from 'exoflex';
 import * as ImagePicker from 'expo-image-picker';
 import type { ImageInfo } from 'expo-image-picker/build/ImagePicker.types';
 
+import { usePostAction } from '../apis/post';
+
 export const NewPost = () => null;
 
 export function NewPostButton() {
+  let { addPost } = usePostAction();
+
   let [isModalVisible, setModalVisible] = useState(false);
   let [image, setImage] = useState<ImageInfo | null>(null);
   let [caption, setCaption] = useState('');
 
   let closeModal = () => setModalVisible(false);
+
+  let reset = () => {
+    setImage(null);
+    setCaption('');
+  };
+
+  let submit = () => {
+    image &&
+      addPost({
+        description: caption,
+        images: [image],
+      });
+    closeModal();
+    reset();
+  };
 
   let pickImage = async () => {
     try {
@@ -39,6 +58,7 @@ export function NewPostButton() {
       }
 
       closeModal();
+      reset();
     } catch (e) {
       console.log('>>error', e);
     }
@@ -64,7 +84,7 @@ export function NewPostButton() {
             <Button
               accessibilityStates
               preset="invisible"
-              onPress={() => {}}
+              onPress={submit}
               style={{ minWidth: 0, width: 120 }}
             >
               Share

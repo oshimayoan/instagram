@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ComponentProps } from 'react';
 import {
   View,
   FlatList,
@@ -13,11 +13,12 @@ import {
   GestureResponderEvent,
   StyleSheet,
   Platform,
+  Image as RNImage,
 } from 'react-native';
 import { Text, TextInput, Label, Title } from 'exoflex';
 import { format } from 'timeago.js';
 import { useNavigation } from '@react-navigation/native';
-import { Image } from 'react-native-expo-image-cache';
+import { Image as CachedImage } from 'react-native-expo-image-cache';
 
 import { useFadingAnimation } from '../helpers/useFadingAnimation';
 import { usePosts } from '../apis/post';
@@ -241,6 +242,21 @@ export default function Feed() {
     </View>
   );
 }
+
+function Image(props: ComponentProps<typeof CachedImage>) {
+  let { uri, preview, tint, ...otherProps } = props;
+  let isLocal = uri.indexOf('http') !== 0 && uri.indexOf('https') !== 0;
+
+  if (isLocal) {
+    return <RNImage source={{ uri }} {...otherProps} />;
+  }
+
+  return <CachedImage {...props} />;
+}
+
+Image.defaultProps = {
+  onError: () => {},
+};
 
 const styles = StyleSheet.create({
   root: {
