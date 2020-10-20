@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Alert } from 'react-native';
 import { useQuery, useMutation } from 'react-query';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import type { ImageInfo } from 'expo-image-picker/build/ImagePicker.types';
@@ -12,10 +13,19 @@ import { API_URL } from '../constants/api';
 import { hydrationState } from '../atoms/hydration';
 
 import { useCommentAction } from './comment';
+import { useAuth } from './auth';
 import { userState, tokenState, profileState } from '../atoms/user';
 import { User } from '../types/User';
 
-export let getAllPosts = async (userId?: number) => {
+type GetAllPostsError = {
+  error: string;
+  message: string;
+  statusCode: number;
+};
+
+export let getAllPosts = async (
+  userId?: number,
+): Promise<Array<Post> | GetAllPostsError> => {
   let filters = '_limit=20&_sort=created_at:DESC';
   if (userId != null) {
     filters = `${filters}&user.id=${userId}`;
@@ -122,15 +132,18 @@ export function usePostAction() {
 export function usePosts(userId?: number) {
   let postsKey = userId != null ? ['posts', { userId }] : 'posts';
   let isHydrated = useRecoilValue(hydrationState);
-  let { isLoading, isFetching, data, refetch, error, isError } = useQuery<
-    Array<Post>
-  >(postsKey, () => getAllPosts(userId), {
-    enabled: isHydrated,
-  });
+  let { isLoading, isFetching, data, refetch, error, isError } = useQuery(
+    postsKey,
+    () => getAllPosts(userId),
+    {
+      enabled: isHydrated,
+    },
+  );
   let [postList, setPostList] = useRecoilState(postListState);
   let commentList = useRecoilValue(commentListState);
   let { addComment } = useCommentAction();
   let { persist } = usePersistCache();
+  let { logout } = useAuth();
 
   let posts = postList.map((post) => {
     let relatedComments = commentList[post.id.toString()] ?? [];
@@ -147,6 +160,18 @@ export function usePosts(userId?: number) {
 
   useEffect(() => {
     if ((!isLoading || !isFetching) && data) {
+      if ('error' in data) {
+        switch (data.statusCode) {
+          case 403: {
+            logout();
+            break;
+          }
+          default:
+            Alert.alert(data.error, data.message);
+            break;
+        }
+        return;
+      }
       persist(['posts']);
       setPostList(data);
     }

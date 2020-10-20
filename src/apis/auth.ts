@@ -57,15 +57,15 @@ export function useAuth() {
   let token = useRecoilValue(tokenState);
 
   useEffect(() => {
-    if (!isLoading && data && (data as LoggedInError)?.statusCode) {
+    if (!isLoading && data && 'statusCode' in data) {
       setIsError(true);
-      setError((data as LoggedInError).message[0].messages[0].message);
+      setError(data.message[0].messages[0].message);
       return;
     }
     setError('');
     setIsError(false);
-    if (!isLoading && data && (data as LoggedInUser)?.jwt) {
-      let { jwt, user } = data as LoggedInUser;
+    if (!isLoading && data && 'jwt' in data) {
+      let { jwt, user } = data;
       setUser({
         jwt,
         id: user.id,
