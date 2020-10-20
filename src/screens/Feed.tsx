@@ -147,9 +147,14 @@ export default function Feed() {
               <Image
                 tint="light"
                 preview={{
-                  uri: images[0].formats.thumbnail.url,
+                  uri: images[0]?.formats?.thumbnail?.url ?? '',
                 }}
-                uri={images[0].formats.large.url}
+                uri={
+                  images[0]?.formats?.large?.url ??
+                  images[0]?.formats?.medium?.url ??
+                  images[0]?.formats?.small?.url ??
+                  ''
+                }
                 style={styles.itemImage}
               />
               <View style={{ marginHorizontal: 12, marginTop: 12 }}>
