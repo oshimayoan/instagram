@@ -17,7 +17,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.oshimayoan.instagram"
     },
     "web": {
       "favicon": "./assets/favicon.png"
