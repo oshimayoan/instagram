@@ -12,7 +12,6 @@ import { Text, Subtitle } from 'exoflex';
 
 import { profileState } from '../atoms/user';
 import { usePosts } from '../apis/post';
-import { DEV_API } from '../constants/api';
 import type { User } from '../types/User';
 
 const PROFILE_IMAGE_SIZE = 104;

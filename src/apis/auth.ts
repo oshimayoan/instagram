@@ -4,7 +4,7 @@ import { useSetRecoilState, useRecoilValue } from 'recoil';
 import type { IVestResult } from 'vest';
 
 import baseValidate from '../validations/login';
-import { DEV_API } from '../constants/api';
+import { API_URL } from '../constants/api';
 import { userState, tokenState } from '../atoms/user';
 import type { User } from '../types/User';
 import type { Posts } from '../atoms/posts';
@@ -37,7 +37,7 @@ type LoggedInError = {
 export async function getAuth(
   params: LoginParams,
 ): Promise<LoggedInUser | LoggedInError> {
-  let url = `${DEV_API}/auth/local`;
+  let url = `${API_URL}/auth/local`;
   let body = JSON.stringify(params);
   return fetch(url, {
     headers: {

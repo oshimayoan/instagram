@@ -6,12 +6,12 @@ import { commentListState, Comment } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
-import { DEV_API } from '../constants/api';
+import { API_URL } from '../constants/api';
 import { Posts } from '../atoms/posts';
 import { userState } from '../atoms/user';
 
 export let getAllComments = (postId: number) =>
-  fetch(`${DEV_API}/comments?_limit=20&postId=${postId}`).then((res) =>
+  fetch(`${API_URL}/comments?_limit=20&postId=${postId}`).then((res) =>
     res.json(),
   );
 
@@ -22,7 +22,7 @@ type NewCommentData = Pick<Comment, 'content' | 'postId'> & {
 
 export let createComment = async (data: NewCommentData) => {
   let body = JSON.stringify(data);
-  return fetch(`${DEV_API}/comments`, { method: 'POST', body }).then((res) =>
+  return fetch(`${API_URL}/comments`, { method: 'POST', body }).then((res) =>
     res.json(),
   );
 };

@@ -8,7 +8,7 @@ import { commentListState } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
-import { DEV_API } from '../constants/api';
+import { API_URL } from '../constants/api';
 import { hydrationState } from '../atoms/hydration';
 
 import { useCommentAction } from './comment';
@@ -20,7 +20,7 @@ export let getAllPosts = async (userId?: number) => {
   if (userId != null) {
     filters = `${filters}&user.id=${userId}`;
   }
-  return fetch(`${DEV_API}/posts?${filters}`)
+  return fetch(`${API_URL}/posts?${filters}`)
     .then((res) => res.json())
     .catch((e) => console.log(e.message));
 };
@@ -50,7 +50,7 @@ export let createPost = async (params: CreatePostParams) => {
     type: image.type as string,
   } as unknown) as Blob);
 
-  return fetch(`${DEV_API}/posts`, {
+  return fetch(`${API_URL}/posts`, {
     method: 'POST',
     body,
     headers: {
