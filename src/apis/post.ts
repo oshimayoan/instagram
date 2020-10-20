@@ -24,13 +24,20 @@ type GetAllPostsError = {
 };
 
 export let getAllPosts = async (
+  token: string,
   userId?: number,
 ): Promise<Array<Post> | GetAllPostsError> => {
+  let authorization = `Bearer ${token}`;
   let filters = '_limit=20&_sort=created_at:DESC';
   if (userId != null) {
     filters = `${filters}&user.id=${userId}`;
   }
-  return fetch(`${API_URL}/posts?${filters}`)
+  return fetch(`${API_URL}/posts?${filters}`, {
+    headers: {
+      'content-type': 'application/json',
+      authorization,
+    },
+  })
     .then((res) => res.json())
     .catch((e) => console.log(e.message));
 };
@@ -132,9 +139,10 @@ export function usePostAction() {
 export function usePosts(userId?: number) {
   let postsKey = userId != null ? ['posts', { userId }] : 'posts';
   let isHydrated = useRecoilValue(hydrationState);
+  let token = useRecoilValue(tokenState);
   let { isLoading, isFetching, data, refetch, error, isError } = useQuery(
     postsKey,
-    () => getAllPosts(userId),
+    () => getAllPosts(token, userId),
     {
       enabled: isHydrated,
     },
@@ -162,6 +170,7 @@ export function usePosts(userId?: number) {
     if ((!isLoading || !isFetching) && data) {
       if ('error' in data) {
         switch (data.statusCode) {
+          case 401:
           case 403: {
             logout();
             break;

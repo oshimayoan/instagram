@@ -8,23 +8,37 @@ import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
 import { API_URL } from '../constants/api';
 import { Posts } from '../atoms/posts';
-import { userState } from '../atoms/user';
+import { userState, tokenState } from '../atoms/user';
 
-export let getAllComments = (postId: number) =>
-  fetch(`${API_URL}/comments?_limit=20&postId=${postId}`).then((res) =>
-    res.json(),
-  );
+export let getAllComments = (token: string, postId: number) =>
+  fetch(`${API_URL}/comments?_limit=20&postId=${postId}`, {
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+  }).then((res) => res.json());
 
 type NewCommentData = Pick<Comment, 'content' | 'postId'> & {
   user: { id: number };
   post: { id: number };
 };
 
-export let createComment = async (data: NewCommentData) => {
+type CreateCommentParams = {
+  token: string;
+  comment: NewCommentData;
+};
+
+export let createComment = async (params: CreateCommentParams) => {
+  let { token, comment: data } = params;
   let body = JSON.stringify(data);
-  return fetch(`${API_URL}/comments`, { method: 'POST', body }).then((res) =>
-    res.json(),
-  );
+  return fetch(`${API_URL}/comments`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${token}`,
+    },
+    body,
+  }).then((res) => res.json());
 };
 
 export function useCommentAction() {
@@ -33,6 +47,7 @@ export function useCommentAction() {
   let { persist } = usePersistCache();
   let queryCache = useQueryCache();
   let user = useRecoilValue(userState);
+  let token = useRecoilValue(tokenState);
 
   let addComment = (postId: number, comment: string) => {
     let tempId = new Date().getTime();
@@ -50,10 +65,13 @@ export function useCommentAction() {
     };
     setCommentList(newCommentList);
     mutate({
-      postId,
-      content: comment,
-      user: { id: 1 },
-      post: { id: postId },
+      token,
+      comment: {
+        postId,
+        content: comment,
+        user: { id: 1 },
+        post: { id: postId },
+      },
     })
       .then((newComment) => {
         let comments = newCommentList[postId.toString()];
@@ -91,9 +109,10 @@ export function useCommentAction() {
 }
 
 export function useComments(postId: number) {
+  let token = useRecoilValue(tokenState);
   let { isLoading, data, error, isError } = useQuery<Array<Comment>>(
     ['comments', { postId }],
-    () => getAllComments(postId),
+    () => getAllComments(token, postId),
   );
   let [commentList, setCommentList] = useRecoilState(commentListState);
   let { addComment: addCommentBase } = useCommentAction();
