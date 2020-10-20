@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation } from 'react-query';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import * as Sentry from 'sentry-expo';
 import type { ImageInfo } from 'expo-image-picker/build/ImagePicker.types';
 
 import { postListState, Post } from '../atoms/posts';
@@ -130,7 +131,10 @@ export function usePostAction() {
         setPostList(mutatedPostList);
         persist(['posts']);
       })
-      .catch((e) => console.log('Something unexpected happen:', e));
+      .catch((e) => {
+        Sentry.Native.captureException(e);
+        Alert.alert('Something unexpected happen', e.message);
+      });
   };
 
   return { addPost };
