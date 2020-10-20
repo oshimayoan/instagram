@@ -23,6 +23,18 @@
     },
     "android": {
       "package": "dev.oshimayoan.instagram"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "oshimayoan",
+            "project": "instagram",
+            "authToken": "ffc14d9a8e624b6da92fbbd2802bd38ead27f0afd3c7477cad34ec4e1603e615"
+          }
+        }
+      ]
     }
   }
 }

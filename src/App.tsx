@@ -5,15 +5,23 @@ import { Provider as ThemeProvider, ActivityIndicator } from 'exoflex';
 import { RecoilRoot, useSetRecoilState } from 'recoil';
 import { ReactQueryCacheProvider, useQueryCache } from 'react-query';
 import AsyncStorage from '@react-native-community/async-storage';
+import * as Sentry from 'sentry-expo';
 
 import Router from './routes/Main';
 import PersistanceObserver from './atoms/PersistanceObserver';
 import { usePersistCache } from './helpers/persistCache';
 import { hydrationState } from './atoms/hydration';
 import { userState } from './atoms/user';
+import { SENTRY_DSN } from './constants/constant';
 
 // AsyncStorage.removeItem('user');
 // AsyncStorage.clear();
+
+Sentry.init({
+  dsn: SENTRY_DSN,
+  enableInExpoDevelopment: true,
+  debug: true, // Sentry will try to print out useful debugging information if something goes wrong with sending an event. Set this to `false` in production.
+});
 
 export default function App() {
   return (
