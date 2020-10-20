@@ -65,6 +65,7 @@ export function usePostAction() {
   let [mutate] = useMutation(createPost);
   let token = useRecoilValue(tokenState);
   let user = useRecoilValue(profileState) as User;
+  let { persist } = usePersistCache();
 
   let addPost = (post: NewPost) => {
     let tempId = new Date().getTime();
@@ -79,7 +80,7 @@ export function usePostAction() {
         },
       };
     });
-    let newPost = {
+    let newPost: Post = {
       ...post,
       id: tempId,
       images,
@@ -91,13 +92,28 @@ export function usePostAction() {
     let newPostList = [newPost, ...postList];
     setPostList(newPostList);
 
-    // mutate({
-    // token,
-    // post: {
-    // ...post,
-    // user: { id: user.id },
-    // },
-    // }).then(console.log);
+    mutate({
+      token,
+      post: {
+        ...post,
+        user: { id: user.id },
+      },
+    })
+      .then((newPostServer: Post) => {
+        let index = newPostList.findIndex((post) => post.id === tempId);
+        let newPostCombined = {
+          ...newPost,
+          ...newPostServer,
+        };
+        let mutatedPostList: Array<Post> = [
+          ...newPostList.slice(0, index),
+          newPostCombined,
+          ...newPostList.slice(index + 1),
+        ];
+        setPostList(mutatedPostList);
+        persist(['posts']);
+      })
+      .catch((e) => console.log('Something unexpected happen:', e));
   };
 
   return { addPost };
