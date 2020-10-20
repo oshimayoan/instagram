@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryCache } from 'react-query';
 import { useRecoilState, useRecoilValue } from 'recoil';
 
@@ -9,8 +10,18 @@ import { usePersistCache } from '../helpers/persistCache';
 import { API_URL } from '../constants/api';
 import { Posts } from '../atoms/posts';
 import { userState, tokenState } from '../atoms/user';
+import { useAuth } from './auth';
 
-export let getAllComments = (token: string, postId: number) =>
+type GetAllCommentsError = {
+  error: string;
+  message: string;
+  statusCode: number;
+};
+
+export let getAllComments = (
+  token: string,
+  postId: number,
+): Promise<Array<Comment> | GetAllCommentsError> =>
   fetch(`${API_URL}/comments?_limit=20&postId=${postId}`, {
     headers: {
       'content-type': 'application/json',
@@ -110,16 +121,30 @@ export function useCommentAction() {
 
 export function useComments(postId: number) {
   let token = useRecoilValue(tokenState);
-  let { isLoading, data, error, isError } = useQuery<Array<Comment>>(
+  let { isLoading, data, error, isError } = useQuery(
     ['comments', { postId }],
     () => getAllComments(token, postId),
   );
   let [commentList, setCommentList] = useRecoilState(commentListState);
   let { addComment: addCommentBase } = useCommentAction();
   let { persist } = usePersistCache();
+  let { logout } = useAuth();
 
   useEffect(() => {
     if (!isLoading && data) {
+      if ('error' in data) {
+        switch (data.statusCode) {
+          case 401:
+          case 403: {
+            logout();
+            break;
+          }
+          default:
+            Alert.alert(data.error, data.message);
+            break;
+        }
+        return;
+      }
       let key = postId.toString();
       let initialData = commentList[key] || [];
       let newComments = sortByDate(combineData(data, initialData), 'asc');
