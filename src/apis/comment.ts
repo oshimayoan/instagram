@@ -57,7 +57,7 @@ export function useCommentAction() {
   let [mutate] = useMutation(createComment);
   let { persist } = usePersistCache();
   let queryCache = useQueryCache();
-  let user = useRecoilValue(userState);
+  let user = useRecoilValue(userState) as User;
   let token = useRecoilValue(tokenState);
 
   let addComment = (postId: number, comment: string) => {
@@ -80,7 +80,7 @@ export function useCommentAction() {
       comment: {
         postId,
         content: comment,
-        user: { id: 1 },
+        user: { id: user.id },
         post: { id: postId },
       },
     })
