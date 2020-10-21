@@ -11,7 +11,7 @@ import { useRecoilValue } from 'recoil';
 import { Text, Subtitle } from 'exoflex';
 
 import { profileState } from '../atoms/user';
-import { usePosts } from '../apis/post';
+import { usePosts, useUserPosts } from '../apis/post';
 import type { User } from '../types/User';
 
 const PROFILE_IMAGE_SIZE = 104;
@@ -24,12 +24,13 @@ export default function Profile() {
   let user = useRecoilValue(profileState) as User;
   let avatarUri = user?.photo?.formats?.thumbnail?.url ?? '';
   let fullName = `${user.firstName} ${user.lastName}`;
-  let { posts } = usePosts(user.id);
+  let { posts, isFetching, isLoading } = useUserPosts(user.id);
 
   return (
     <FlatList
       numColumns={POST_COLUMNS}
       keyExtractor={({ id }) => id.toString()}
+      refreshing={isFetching || isLoading}
       data={posts}
       renderItem={({ item }) => {
         let uri = item.images[0].formats.thumbnail.url;

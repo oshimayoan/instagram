@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation } from 'react-query';
 import { useRecoilState, useRecoilValue } from 'recoil';
@@ -204,5 +204,50 @@ export function usePosts(userId?: number) {
     error,
     addComment,
     posts,
+  };
+}
+
+export function useUserPosts(userId: number) {
+  let isHydrated = useRecoilValue(hydrationState);
+  let token = useRecoilValue(tokenState);
+  let postsKey = ['posts', { userId }];
+  let { isLoading, isFetching, data, refetch, error, isError } = useQuery(
+    postsKey,
+    () => getAllPosts(token, userId),
+    {
+      enabled: isHydrated,
+    },
+  );
+  let { persist } = usePersistCache();
+  let { logout } = useAuth();
+  let [posts, setPosts] = useState<Array<Post>>([]);
+
+  useEffect(() => {
+    if ((!isLoading || !isFetching) && data) {
+      if ('error' in data) {
+        switch (data.statusCode) {
+          case 401:
+          case 403: {
+            logout();
+            break;
+          }
+          default:
+            Alert.alert(data.error, data.message);
+            break;
+        }
+        return;
+      }
+      persist(['posts']);
+      setPosts(data);
+    }
+  }, [isLoading, isFetching]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return {
+    isLoading,
+    isFetching,
+    isError,
+    error,
+    posts,
+    refetch,
   };
 }
