@@ -2,14 +2,16 @@ import { useEffect } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryCache } from 'react-query';
 import { useRecoilState, useRecoilValue } from 'recoil';
+import * as Sentry from 'sentry-expo';
 
 import { commentListState, Comment } from '../atoms/comments';
 import { combineData } from '../helpers/combineData';
 import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
 import { API_URL } from '../constants/api';
-import { Posts } from '../atoms/posts';
 import { userState, tokenState } from '../atoms/user';
+import type { User } from '../types/User';
+
 import { useAuth } from './auth';
 
 type GetAllCommentsError = {
@@ -49,7 +51,12 @@ export let createComment = async (params: CreateCommentParams) => {
       authorization: `Bearer ${token}`,
     },
     body,
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .catch((e) => {
+      Sentry.Native.captureException(e);
+      Alert.alert('Something unexpected happen', e.message);
+    });
 };
 
 export function useCommentAction() {

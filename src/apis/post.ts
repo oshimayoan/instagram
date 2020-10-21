@@ -12,11 +12,11 @@ import { sortByDate } from '../helpers/sort';
 import { usePersistCache } from '../helpers/persistCache';
 import { API_URL } from '../constants/api';
 import { hydrationState } from '../atoms/hydration';
+import { userState, tokenState, profileState } from '../atoms/user';
+import type { User } from '../types/User';
 
 import { useCommentAction } from './comment';
 import { useAuth } from './auth';
-import { userState, tokenState, profileState } from '../atoms/user';
-import { User } from '../types/User';
 
 type GetAllPostsError = {
   error: string;
@@ -60,12 +60,13 @@ export let createPost = async (params: CreatePostParams) => {
   let [image] = images;
   let authorization = `Bearer ${token}`;
   let data = JSON.stringify(otherData);
+  let fileType = image.type === 'video' ? 'video/mp4' : 'image/jpeg';
   let body = new FormData();
   body.append('data', data);
   body.append('files.images', ({
     uri: image.uri,
     name: new Date().getTime().toString(),
-    type: image.type as string,
+    type: fileType,
   } as unknown) as Blob);
 
   return fetch(`${API_URL}/posts`, {
@@ -75,7 +76,12 @@ export let createPost = async (params: CreatePostParams) => {
       'content-type': 'multipart/form-data',
       authorization,
     },
-  }).then((res) => res.json());
+  })
+    .then((res) => res.json())
+    .catch((e) => {
+      Sentry.Native.captureException(e);
+      Alert.alert('Something unexpected happen', e.message);
+    });
 };
 
 export function usePostAction() {
