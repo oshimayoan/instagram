@@ -119,6 +119,7 @@ const styles = StyleSheet.create({
   post: {
     flex: 1,
     padding: StyleSheet.hairlineWidth,
+    maxWidth: POST_IMAGE_HEIGHT + StyleSheet.hairlineWidth * 2,
   },
   postImage: {
     width: POST_IMAGE_HEIGHT,
