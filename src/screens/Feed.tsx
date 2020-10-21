@@ -157,14 +157,16 @@ export default function Feed() {
                 }
                 style={styles.itemImage}
               />
-              <View style={{ marginHorizontal: 12, marginTop: 12 }}>
-                <Text>
-                  <Text weight="medium" style={{ color: '#000' }}>
-                    {user.username}
+              {!!description && (
+                <View style={{ marginHorizontal: 12, marginTop: 12 }}>
+                  <Text>
+                    <Text weight="medium" style={{ color: '#000' }}>
+                      {user.username}
+                    </Text>
+                    {` ${description}`}
                   </Text>
-                  {` ${description}`}
-                </Text>
-              </View>
+                </View>
+              )}
               {totalComments > 0 && (
                 <>
                   <TouchableOpacity
